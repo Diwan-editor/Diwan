@@ -8,9 +8,9 @@ Vim-like text editor
 - [x] add a license
 - [x] cannot commit to main branch
 - [x] PR branch needs to be reviewed by 1 minimum
-- [ ] PR branch needs to be up to date with main by rebase
-- [ ] PR branch needs to be squashed and merged
-- [ ] PR branch needs to be deleted after merge
+- [x] PR branch needs to be up to date with main by rebase
+- [x] PR branch needs to be squashed and merged
+- [x] PR branch needs to be deleted after merge
 - [ ] create kanban style project board
 - [ ] create epics for all scopes
 - [ ] create issues for all epics
