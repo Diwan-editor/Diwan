@@ -11,6 +11,7 @@ Vim-like text editor
 - [ ] PR branch needs to be up to date with main by rebase
 - [ ] PR branch needs to be squashed and merged
 - [ ] PR branch needs to be deleted after merge
+- [ ] create kanban style project board
 - [ ] create epics for all scopes
 - [ ] create issues for all epics
 - [x] create PR and branch naming conventions
