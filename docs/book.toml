@@ -1,0 +1,6 @@
+[book]
+authors = ["Abdogouhmad"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Diwan editor"
