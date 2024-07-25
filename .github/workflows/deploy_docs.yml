@@ -3,14 +3,14 @@ name: Deploy docs to GitHub Pages
 on:
   pull_request:
     types:
-      - labeled
+      - closed
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     if: |
-      ((github.event.pull_request.state == 'open') && 
+      ((github.event.pull_request.merged == true) && 
       (github.base_ref == 'main') &&
       (contains(github.event.pull_request.labels.*.name, 'documentation')))
 
