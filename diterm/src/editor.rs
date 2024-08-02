@@ -1,5 +1,3 @@
-#![allow(unused_variables)]
-
 use anyhow::{anyhow, Context, Result};
 
 use termwiz::{
