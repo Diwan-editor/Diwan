@@ -1,0 +1,15 @@
+[workspace]
+members = ["cli", "diterm"]
+resolver = "2"
+
+[profile.dev]
+opt-level = 1
+[profile.release]
+opt-level = 3
+lto = true
+
+[workspace.package]
+description = "Diwanwiz is a minimal rust text editor like vim"
+version = "24.8.1"
+edition = "2021"
+authors = ["Abdogouhmad <gouhmad@gmail.com>"]

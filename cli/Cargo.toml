@@ -1,0 +1,13 @@
+[package]
+name = "cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "di"
+path = "src/main.rs"
+
+
+[dependencies]
+anyhow = "1.0.86"
+diterm = { path = "../diterm" }
