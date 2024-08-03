@@ -1,5 +1,5 @@
 ## General Specification for the project !   
-> This Specification is only for the MVP of this project that need to do the first user journey , consisting of opening a file editing and saving it into the filesystem !    
+> This is a temporary initial specification to help achieve the first user journey, consisting of opening a file editing and saving it into the filesystem !    
 --- 
 > This Specification can't be finished now , since m too retarded to give it soo much time !   
 
