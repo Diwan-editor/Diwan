@@ -1,0 +1,18 @@
+[package]
+name = "diwan"
+version = "0.0.1"
+edition = "2021"
+authors = ["makarov" , "bspwn", "her majesty hipno" , "meilleur PO"]
+description = "just another exotic editor"
+repository = "https://github.com/Diwan-editor/Diwan/"
+
+
+[dependencies]
+anyhow = "1.0.86"
+argon2 = "0.5.3"
+clap = "4.5.13"
+ropey = "1.6.1"
+signal-hook = "0.3.17"
+termwiz = "0.22.0"
+tokio = "1.39.2"
+
