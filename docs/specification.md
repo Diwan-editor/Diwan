@@ -29,7 +29,7 @@ simple_editor/
 
 ## Explanation :   
 
-- src/main.rs: The entry point of the application. This file should contain the main function and initialize the editor.
+- src/main.rs: The entrypoint of the application. This file should contain the main function and initialize the editor.
 
 - src/commands: This directory contains modules related to commands.
         - mod.rs: The module file that re-exports other command modules.
