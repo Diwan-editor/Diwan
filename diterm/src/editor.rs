@@ -20,8 +20,8 @@ enum Actions {
 
 /// Enum for mode
 enum Modes {
-    NORMAL,
-    INSERT,
+    Normal,
+    Insert,
 }
 
 pub struct Editor {
@@ -31,6 +31,7 @@ pub struct Editor {
 }
 
 impl Editor {
+    /// Creates a new instance of the editor and initializes it
     pub fn new() -> Result<Self, anyhow::Error> {
         let mut editor = Self {
             content: VecDeque::from([VecDeque::new()]),
@@ -41,67 +42,89 @@ impl Editor {
         Ok(editor)
     }
 
+    /// Maps `KeyCode` to `Actions`
+    fn map_key_to_action(key: KeyCode, mode: &Modes) -> Option<Actions> {
+        match mode {
+            Modes::Normal => match key {
+                KeyCode::Char('q') => Some(Actions::Quit),
+                KeyCode::Char('h') | KeyCode::LeftArrow => Some(Actions::Left),
+                KeyCode::Char('j') | KeyCode::DownArrow => Some(Actions::Down),
+                KeyCode::Char('k') | KeyCode::UpArrow => Some(Actions::Up),
+                KeyCode::Char('l') | KeyCode::RightArrow => Some(Actions::Right),
+                KeyCode::Char('i') => Some(Actions::EnterMode(Modes::Insert)),
+                _ => None,
+            },
+            Modes::Insert => match key {
+                KeyCode::Escape => Some(Actions::EnterMode(Modes::Normal)),
+                KeyCode::LeftArrow => Some(Actions::Left),
+                KeyCode::DownArrow => Some(Actions::Down),
+                KeyCode::UpArrow => Some(Actions::Up),
+                KeyCode::RightArrow => Some(Actions::Right),
+                _ => None,
+            },
+        }
+    }
+
+    /// Handles mode-specific input events
+    ///
+    /// # Arguments
+    ///
+    /// * `terminal` - Mutable reference to the terminal
+    /// * `mode` - Current mode of the editor
+    /// * `ev` - Input event to handle
+    ///
+    /// # Returns
+    ///
+    /// * `Option<Actions>` - The action to be performed based on the input event
     fn handle_modes(
         &mut self,
         terminal: &mut dyn Terminal,
         mode: &Modes,
         ev: InputEvent,
     ) -> anyhow::Result<Option<Actions>> {
-        match mode {
-            Modes::NORMAL => self.normal_mode(ev),
-            Modes::INSERT => self.insert_mode(terminal, ev),
-        }
-    }
-
-    fn normal_mode(&mut self, ev: InputEvent) -> anyhow::Result<Option<Actions>> {
         match ev {
-            InputEvent::Key(key) => match key.key {
-                KeyCode::Char('q') => Ok(Some(Actions::Quit)),
-                KeyCode::Char('h') | KeyCode::LeftArrow => Ok(Some(Actions::Left)),
-                KeyCode::Char('j') | KeyCode::DownArrow => Ok(Some(Actions::Down)),
-                KeyCode::Char('k') | KeyCode::UpArrow => Ok(Some(Actions::Up)),
-                KeyCode::Char('l') | KeyCode::RightArrow => Ok(Some(Actions::Right)),
-                KeyCode::Char('i') => Ok(Some(Actions::EnterMode(Modes::INSERT))),
-                _ => Ok(None),
-            },
+            InputEvent::Key(key) => {
+                if let Some(action) = Self::map_key_to_action(key.key, mode) {
+                    return Ok(Some(action));
+                }
+
+                match mode {
+                    Modes::Normal => Ok(None),
+                    Modes::Insert => match key.key {
+                        KeyCode::Char(c) => {
+                            self.insert_char(c);
+                            self.render_content(terminal)?;
+                            Ok(None)
+                        }
+                        KeyCode::Backspace => {
+                            self.delete_char();
+                            self.render_content(terminal)?;
+                            Ok(None)
+                        }
+                        KeyCode::Enter => {
+                            self.insert_newline();
+                            self.render_content(terminal)?;
+                            Ok(None)
+                        }
+                        _ => Ok(None),
+                    },
+                }
+            }
             _ => Ok(None),
         }
     }
 
-    fn insert_mode(
-        &mut self,
-        terminal: &mut dyn Terminal,
-        ev: InputEvent,
-    ) -> anyhow::Result<Option<Actions>> {
-        match ev {
-            InputEvent::Key(key) => match key.key {
-                KeyCode::Escape => Ok(Some(Actions::EnterMode(Modes::NORMAL))),
-                KeyCode::Char(c) => {
-                    self.insert_char(c);
-                    self.render_content(terminal)?;
-                    Ok(None)
-                }
-                KeyCode::Backspace => {
-                    self.delete_char();
-                    self.render_content(terminal)?;
-                    Ok(None)
-                }
-                KeyCode::Enter => {
-                    self.insert_newline();
-                    self.render_content(terminal)?;
-                    Ok(None)
-                }
-                _ => Ok(None),
-            },
-            _ => Ok(None),
-        }
-    }
-
+    /// Inserts a character at the current cursor position
+    ///
+    /// # Arguments
+    ///
+    /// * `c` - Character to insert
     fn insert_char(&mut self, c: char) {
         self.content[self.cursor_y].insert(self.cursor_x, c);
         self.cursor_x += 1;
     }
 
+    /// Deletes a character at the current cursor position
     fn delete_char(&mut self) {
         if self.cursor_x > 0 {
             self.cursor_x -= 1;
@@ -114,6 +137,7 @@ impl Editor {
         }
     }
 
+    /// Inserts a new line at the current cursor position
     fn insert_newline(&mut self) {
         let remainder: VecDeque<char> = self.content[self.cursor_y].split_off(self.cursor_x);
         self.content.insert(self.cursor_y + 1, remainder);
@@ -121,6 +145,15 @@ impl Editor {
         self.cursor_x = 0;
     }
 
+    /// Renders the content of the editor to the terminal
+    ///
+    /// # Arguments
+    ///
+    /// * `terminal` - Mutable reference to the terminal
+    ///
+    /// # Returns
+    ///
+    /// * `Result<()>` - Result indicating success or failure
     fn render_content(&self, terminal: &mut dyn Terminal) -> anyhow::Result<()> {
         terminal.render(&[Change::ClearScreen(ColorAttribute::Default)])?;
         for (y, line) in self.content.iter().enumerate() {
@@ -140,8 +173,13 @@ impl Editor {
         Ok(())
     }
 
+    /// Initializes the editor and starts the main loop
+    ///
+    /// # Returns
+    ///
+    /// * `Result<()>` - Result indicating success or failure
     fn init_editor(&mut self) -> anyhow::Result<()> {
-        let mut mode = Modes::NORMAL;
+        let mut mode = Modes::Normal;
 
         // Get terminal capabilities
         let caps = Capabilities::new_from_env()?;
@@ -158,12 +196,12 @@ impl Editor {
             // Read an event from the terminal
             let input_event = terminal.poll_input(None).context("Failed to poll input")?;
 
-            match self.handle_modes(
+            if let Some(action) = self.handle_modes(
                 &mut terminal,
                 &mode,
                 input_event.context("can't get context")?,
             )? {
-                Some(action) => match action {
+                match action {
                     Actions::Quit => break,
                     Actions::Up => self.move_cursor_up(),
                     Actions::Down => self.move_cursor_down(),
@@ -172,17 +210,16 @@ impl Editor {
                     Actions::EnterMode(new_mode) => {
                         mode = new_mode;
                         match mode {
-                            Modes::NORMAL => {
+                            Modes::Normal => {
                                 terminal.render(&[Change::CursorShape(CursorShape::Default)])?
                             }
-                            Modes::INSERT => {
+                            Modes::Insert => {
                                 terminal.render(&[Change::CursorShape(CursorShape::BlinkingBar)])?
                             }
                         }
                         terminal.flush()?;
                     }
-                },
-                None => {}
+                }
             }
 
             self.render_content(&mut terminal)?;
