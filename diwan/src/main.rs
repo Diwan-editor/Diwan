@@ -2,9 +2,9 @@ mod commands;
 mod editor;
 mod utils;
 
-use editor::Editor;
-use utils::file_manager::FileManager;
-use log::{info, error};
+// use editor::Editor;
+// use utils::file_manager::FileManager;
+// use log::{info, error};
 use env_logger;
 use tokio;
 
@@ -12,13 +12,13 @@ use tokio;
 async fn main() -> std::io::Result<()> {
     env_logger::init();
 
-    let mut editor = Editor::new();
-    let file_manager = FileManager::new();
+    // let mut editor = Editor::new();
+    // let file_manager = FileManager::new();
 
     // Load file asynchronously
     // match file_manager.load_file("../lh7abs.txt").await {
     //     Ok(contents) => {
-    //         // info!("File loaded successfully");
+    //         info!("File loaded successfully");
     //         editor.load_contents(contents);
     //     }
     //     Err(e) => {
@@ -26,6 +26,7 @@ async fn main() -> std::io::Result<()> {
     //         return Err(e);
     //     }
     // }
+
 
     // // Enter raw mode and handle input
     // editor.enter_raw_mode();
