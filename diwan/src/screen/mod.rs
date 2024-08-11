@@ -1,4 +1,5 @@
 pub mod widget;
+pub mod myTerminal;
 
 use termwiz::widgets::*;
 use termwiz::input::*;
@@ -11,18 +12,20 @@ use termwiz::caps::Capabilities;
 use termwiz::Error;
 use termwiz::surface::Change;
 
+
+struct MyTerminal(Box<dyn Terminal>);
 /// This is a widget for our application
-pub struct MainScreen<'a, T> where T: Terminal {
+pub struct MainScreen<'a>{
     /// Holds the input text that we wish the widget to display
     pub text: &'a mut String,
-    pub buf: BufferedTerminal<T>,
+    pub buf: BufferedTerminal<MyTerminal>,
 }
 
 impl<'a, T> MainScreen<'a, T> where T: Terminal + 'a  {
 
     pub fn new_with_widget(content: &mut String) -> Result<Self, Error> {
         let caps = Capabilities::new_from_env()?;
-        let mut buf = BufferedTerminal::new(new_terminal(caps)?)?;
+        let mut buf = Box::new(BufferedTerminal::new(new_terminal(caps)?)?);
         buf.terminal().set_raw_mode()?;
         buf.terminal().enter_alternate_screen()?;
 
@@ -54,7 +57,9 @@ impl<'a, T> MainScreen<'a, T> where T: Terminal + 'a  {
                 continue;
             }
             // Compute an optimized delta to apply to the terminal and display it
-            self.buf.flush()?;
+            self
+                .buf
+                .flush()?;
 
             // Wait for user input
             match self.buf.terminal().poll_input(None) {
