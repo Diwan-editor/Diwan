@@ -1,47 +1,20 @@
 mod commands;
 mod editor;
 mod utils;
-
-// use editor::Editor;
-// use utils::file_manager::FileManager;
-// use log::{info, error};
-use env_logger;
+mod screen;
 use tokio;
 
+use termwiz::Error;
+use screen::MainScreen;
+
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
-    env_logger::init();
+async fn main() -> Result<(), Error> {
 
-    // let mut editor = Editor::new();
-    // let file_manager = FileManager::new();
+    let mut typed_text = String::new();
+    let main_screen = MainScreen::new_with_widget(&mut typed_text)?;
+    let ui = main_screen.setup_ui();
+    main_screen.main_event_loop(ui).await ?;
 
-    // Load file asynchronously
-    // match file_manager.load_file("../lh7abs.txt").await {
-    //     Ok(contents) => {
-    //         info!("File loaded successfully");
-    //         editor.load_contents(contents);
-    //     }
-    //     Err(e) => {
-    //         error!("if not working : {}", e);
-    //         return Err(e);
-    //     }
-    // }
-
-
-    // // Enter raw mode and handle input
-    // editor.enter_raw_mode();
-    // editor.handle_input();
-
-    // // Save file asynchronously
-    // match file_manager.save_file("example.txt", &mut editor.get_contents()).await {
-    //     Ok(_) => {
-    //         info!("File saved successfully");
-    //     }
-    //     Err(e) => {
-    //         error!("Failed to save file: {}", e);
-    //         return Err(e);
-    //     }
-    // }
-
+    println!("The text you entered: {}", typed_text);
     Ok(())
 }
