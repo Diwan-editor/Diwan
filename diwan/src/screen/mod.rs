@@ -1,6 +1,6 @@
 pub mod widget;
-pub mod myTerminal;
 
+use termwiz::terminal::UnixTerminal;
 use termwiz::widgets::*;
 use termwiz::input::*;
 use termwiz::terminal::{
@@ -13,26 +13,25 @@ use termwiz::Error;
 use termwiz::surface::Change;
 
 
-struct MyTerminal(Box<dyn Terminal>);
 /// This is a widget for our application
 pub struct MainScreen<'a>{
     /// Holds the input text that we wish the widget to display
     pub text: &'a mut String,
-    pub buf: BufferedTerminal<MyTerminal>,
+    pub buf: BufferedTerminal<UnixTerminal>,
 }
 
-impl<'a, T> MainScreen<'a, T> where T: Terminal + 'a  {
+impl<'a> MainScreen<'a> {
 
     pub fn new_with_widget(content: &mut String) -> Result<Self, Error> {
         let caps = Capabilities::new_from_env()?;
-        let mut buf = Box::new(BufferedTerminal::new(new_terminal(caps)?)?);
-        buf.terminal().set_raw_mode()?;
-        buf.terminal().enter_alternate_screen()?;
+        let mut bufer = BufferedTerminal::new(new_terminal(caps)?)?;
+        bufer.terminal().set_raw_mode()?;
+        bufer.terminal().enter_alternate_screen()?;
 
         Ok(
             Self {
                 text: content,
-                buf: buf
+                buf: bufer
             }
         )
     }
