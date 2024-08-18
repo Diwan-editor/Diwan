@@ -1,8 +1,4 @@
-pub mod text_buffer;
-pub mod renderer;
-
-use text_buffer::TextBuffer;
-use renderer::Renderer;
+use super::{renderer::Renderer, text_buffer::TextBuffer};
 
 pub struct Editor {
     text_buffer: TextBuffer,

@@ -1,0 +1,14 @@
+[package]
+name = "diwan-term"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diwan = { path = "../diwan-lib", package = "diwan-lib" } # the real name of package called diwan-lib but to avoid the "-" i used diwan
+anyhow = "1.0.69"
+clap = { version = "4.1.4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+
+[[bin]]
+name = "dn"
+path = "src/main.rs"

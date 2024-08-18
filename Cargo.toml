@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = ["diwan-term", "diwan-lib"]
+
+default-members = ["diwan-term"]
+[build]
+rustflags = ["-A", "dead_code"]
+
+[profile.release]
+lto = "thin"
+
+[profile.opt]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+opt-level = 3
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+authors = ["Tarik", "Makarov", "Abdogouhmad"]
+categories = ["editor"]
+repository = "https://github.com/Diwan-editor/Diwan"
+homepage = "https://github.com/Diwan-editor/Diwan"
+license = "MPL-2.0"
+rust-version = "1.80.1"
