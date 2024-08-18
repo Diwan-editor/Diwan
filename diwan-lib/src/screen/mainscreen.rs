@@ -1,19 +1,3 @@
-<<<<<<< HEAD:diwan/src/screen/mod.rs
-pub mod widget;
-
-use termwiz::terminal::UnixTerminal;
-use termwiz::widgets::*;
-use termwiz::input::*;
-use termwiz::terminal::{
-    buffered::BufferedTerminal,
-    new_terminal,
-    Terminal
-};
-=======
-use std::process::ExitCode;
-
-use anyhow::Result;
->>>>>>> Impl-Terminal:diwan-lib/src/screen/mainscreen.rs
 use termwiz::caps::Capabilities;
 use termwiz::input::*;
 use termwiz::surface::{Change, Position};
@@ -29,25 +13,6 @@ use super::Keymap;
 pub struct MainScreen<'a> {
     /// Holds the input text that we wish the widget to display
     pub text: &'a mut String,
-<<<<<<< HEAD:diwan/src/screen/mod.rs
-    pub buf: BufferedTerminal<UnixTerminal>,
-}
-
-impl<'a> MainScreen<'a> {
-
-    pub fn new_with_widget(content: &mut String) -> Result<Self, Error> {
-        let caps = Capabilities::new_from_env()?;
-        let mut bufer = BufferedTerminal::new(new_terminal(caps)?)?;
-        bufer.terminal().set_raw_mode()?;
-        bufer.terminal().enter_alternate_screen()?;
-
-        Ok(
-            Self {
-                text: content,
-                buf: bufer
-            }
-        )
-=======
     pub mode: Modes,
     pub cursor_pos: usize,
 }
@@ -58,7 +23,6 @@ impl<'a> MainScreen<'a> {
         let term = UnixTerminal::new(caps)?;
         let buffer = BufferedTerminal::new(term)?;
         return Ok(buffer);
->>>>>>> Impl-Terminal:diwan-lib/src/screen/mainscreen.rs
     }
 
     pub fn new_with_widget(
