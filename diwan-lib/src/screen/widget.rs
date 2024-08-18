@@ -40,7 +40,7 @@ impl<'a> Widget for MainScreen<'a> {
         // Apply a dark background and light foreground for dark mode
         args.surface.add_change(Change::ClearScreen(
             ColorAttribute::TrueColorWithPaletteFallback(
-                (0x31, 0x1B, 0x92).into(),
+                (0x00, 0x00, 0x00).into(), // Pure black background
                 AnsiColor::Black.into(),
             ),
         ));
