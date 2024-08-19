@@ -2,6 +2,7 @@ use std::process::ExitCode;
 
 use termwiz::{
     input::{InputEvent, KeyCode, KeyEvent},
+    surface::Change,
     terminal::{buffered::BufferedTerminal, Terminal},
     widgets::WidgetEvent,
     Error as KeymapError,
@@ -34,7 +35,7 @@ impl Keymap {
         if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, .. })) = event {
             match mode {
                 Modes::Normal => match key {
-                    KeyCode::Char('q') => Some(Actions::Quit),
+                    // KeyCode::Char('q') => Some(Actions::Quit),
                     KeyCode::Char('h') | KeyCode::LeftArrow => Some(Actions::MoveLeft),
                     KeyCode::Char('j') | KeyCode::DownArrow => Some(Actions::MoveDown),
                     KeyCode::Char('k') | KeyCode::UpArrow => Some(Actions::MoveUp),
@@ -102,9 +103,9 @@ impl Keymap {
     }
     //close and clean terminal
 
-    fn close_terminal(buffer: &mut BufferedTerminal<impl Terminal>) -> Result<(), KeymapError> {
+    pub fn close_terminal(buffer: &mut BufferedTerminal<impl Terminal>) -> Result<(), KeymapError> {
         buffer.terminal().exit_alternate_screen()?;
         buffer.terminal().set_cooked_mode()?;
-        Ok(())
+        std::process::exit(0);
     }
 }

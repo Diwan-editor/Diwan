@@ -74,11 +74,11 @@ impl<'a> MainScreen<'a> {
                 }
                 Ok(Some(input)) => match input {
                     InputEvent::Key(KeyEvent {
-                        key: KeyCode::Super,
+                        key: KeyCode::Char('q'),
                         ..
                     }) => {
                         // Quit the app when escape is pressed
-                        break;
+                        Keymap::close_terminal(buf).unwrap();
                     }
                     input => {
                         // Feed input into the Ui
