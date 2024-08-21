@@ -15,7 +15,7 @@ pub struct MainScreen<'a> {
     pub text: &'a mut String,
     pub mode: Modes,
     pub cursor_pos: usize,
-    pub status_bar: StatusBar<'a>,
+    pub status_bar: StatusBar,
 }
 
 impl<'a> MainScreen<'a> {
@@ -32,7 +32,7 @@ impl<'a> MainScreen<'a> {
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
-        let status_bar = StatusBar::new("Status: Ready");
+        let status_bar = StatusBar::new("Mode: Normal");
         Ok((
             buffer,
             Self {

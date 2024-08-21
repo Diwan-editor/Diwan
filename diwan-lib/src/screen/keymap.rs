@@ -12,6 +12,7 @@ use super::MainScreen;
 
 pub struct Keymap;
 
+#[derive(Debug)]
 pub enum Modes {
     Normal,
     Insert,

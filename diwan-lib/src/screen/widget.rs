@@ -14,6 +14,7 @@ impl<'a> Widget for MainScreen<'a> {
         if let Some(action) = Keymap::map_key_to_action(event, &self.mode) {
             // Use the `handle_action` function to update the state of `MainScreen`
             Keymap::handle_action(action, self.text, &mut self.cursor_pos, &mut self.mode);
+            self.status_bar.update(&self.mode);
         }
         // match event {
         //     WidgetEvent::Input(InputEvent::Key(KeyEvent {
@@ -72,7 +73,7 @@ impl<'a> Widget for MainScreen<'a> {
     // }
 }
 
-impl<'a> Widget for StatusBar<'a> {
+impl Widget for StatusBar {
     fn process_event(&mut self, _event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
         // The status bar is static and doesn't need to process events in this example.
         false
@@ -80,6 +81,7 @@ impl<'a> Widget for StatusBar<'a> {
 
     fn render(&mut self, args: &mut RenderArgs) {
         let dims = args.surface.dimensions();
+        let status_text_padded = format!("{:<width$}", self.status_text, width = dims.0);
         args.surface.add_change(Change::CursorPosition {
             x: Position::Relative(0), // x position at the start of the line
             y: Position::Relative(((dims.1 - 1) as u16).try_into().unwrap()), // y position at the last row
@@ -98,7 +100,6 @@ impl<'a> Widget for StatusBar<'a> {
                     AnsiColor::Purple.into(),
                 ),
             )));
-        args.surface
-            .add_change(Change::Text(self.status_text.to_string()));
+        args.surface.add_change(Change::Text(status_text_padded));
     }
 }
