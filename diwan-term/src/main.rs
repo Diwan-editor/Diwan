@@ -31,6 +31,7 @@ async fn main() -> Result<(), Error> {
         // create a mutable var that holds typed_text
         MainScreen::main_event_loop(&mut buffer, ui)?;
 
+        let (w, h) = buffer.dimensions();
         println!("The text you entered: {}", typed_text);
     }
 

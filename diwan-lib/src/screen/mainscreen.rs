@@ -7,7 +7,7 @@ use termwiz::widgets::*;
 use termwiz::Error;
 
 use super::keymap::Modes;
-use super::Keymap;
+use super::{Keymap, StatusBar};
 
 /// This is a widget for our application
 pub struct MainScreen<'a> {
@@ -15,6 +15,7 @@ pub struct MainScreen<'a> {
     pub text: &'a mut String,
     pub mode: Modes,
     pub cursor_pos: usize,
+    pub status_bar: StatusBar<'a>,
 }
 
 impl<'a> MainScreen<'a> {
@@ -31,12 +32,14 @@ impl<'a> MainScreen<'a> {
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
+        let status_bar = StatusBar::new("Status: Ready");
         Ok((
             buffer,
             Self {
                 text: content,
                 mode: Modes::Normal,
                 cursor_pos: 0,
+                status_bar,
             },
         ))
     }

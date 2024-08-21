@@ -2,10 +2,10 @@ use crate::screen::MainScreen;
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
 use termwiz::input::*;
-use termwiz::surface::Change;
+use termwiz::surface::{Change, Position, Surface};
 use termwiz::widgets::*;
 
-use super::Keymap;
+use super::{Keymap, StatusBar};
 
 impl<'a> Widget for MainScreen<'a> {
     fn process_event(&mut self, event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
@@ -55,7 +55,7 @@ impl<'a> Widget for MainScreen<'a> {
         args.surface
             .add_change(format!("🤷 surface size is {:?}\r\n", dims));
         args.surface.add_change(self.text.clone());
-
+        self.status_bar.render(args);
         // Place the cursor at the end of the text.
         // A more advanced text editing widget would manage the
         // cursor position differently.
@@ -66,7 +66,39 @@ impl<'a> Widget for MainScreen<'a> {
         };
     }
 
-    fn get_size_constraints(&self) -> layout::Constraints {
-        layout::Constraints::with_fixed_width_height(80, 80)
+    // fn get_size_constraints(&self) -> layout::Constraints {
+    //    let (w, h) = Surface::dimensions();
+    //     layout::Constraints::with_fixed_width_height(80, 80)
+    // }
+}
+
+impl<'a> Widget for StatusBar<'a> {
+    fn process_event(&mut self, _event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
+        // The status bar is static and doesn't need to process events in this example.
+        false
+    }
+
+    fn render(&mut self, args: &mut RenderArgs) {
+        let dims = args.surface.dimensions();
+        args.surface.add_change(Change::CursorPosition {
+            x: Position::Relative(0), // x position at the start of the line
+            y: Position::Relative(((dims.1 - 1) as u16).try_into().unwrap()), // y position at the last row
+        });
+        args.surface
+            .add_change(Change::Attribute(AttributeChange::Foreground(
+                ColorAttribute::TrueColorWithPaletteFallback(
+                    (0xFF, 0xFF, 0xFF).into(), // White text
+                    AnsiColor::White.into(),
+                ),
+            )));
+        args.surface
+            .add_change(Change::Attribute(AttributeChange::Background(
+                ColorAttribute::TrueColorWithPaletteFallback(
+                    (0x80, 0x00, 0x80).into(), // Black background
+                    AnsiColor::Purple.into(),
+                ),
+            )));
+        args.surface
+            .add_change(Change::Text(self.status_text.to_string()));
     }
 }
