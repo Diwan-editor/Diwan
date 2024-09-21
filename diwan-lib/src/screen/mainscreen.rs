@@ -1,3 +1,5 @@
+use std::sync::MutexGuard;
+
 use termwiz::caps::Capabilities;
 use termwiz::input::*;
 use termwiz::surface::{Change, Position};
@@ -48,7 +50,6 @@ impl<'a> MainScreen<'a> {
         ui.set_root(self);
         ui
     }
-
     pub fn main_event_loop(
         mut buf: &mut BufferedTerminal<impl Terminal>,
         mut ui: Ui,
