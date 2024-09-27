@@ -6,7 +6,6 @@ use clap::{
     Parser,
 };
 use diwan::screen::MainScreen;
-use tokio::task;
 
 /// diwan is a rust based text editor that is fast and secure.
 #[derive(Parser, Debug)]

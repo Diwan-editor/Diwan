@@ -52,7 +52,7 @@ impl<'a> MainScreen<'a> {
     }
     pub fn main_event_loop(
         mut buf: &mut BufferedTerminal<impl Terminal>,
-        mut ui: Ui,
+        mut ui: MutexGuard<Ui>,
     ) -> Result<(), Error> {
         loop {
             ui.process_event_queue()?;
