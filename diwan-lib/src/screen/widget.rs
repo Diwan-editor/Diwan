@@ -75,6 +75,7 @@ impl<'a> Widget for MainScreen<'a> {
     // }
 }
 
+// TODO(change path): this status bar should be someweher else not here.
 impl Widget for StatusBar {
     fn process_event(&mut self, _event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
         // The status bar is static and doesn't need to process events in this example.
