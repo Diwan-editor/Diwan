@@ -9,7 +9,7 @@ use termwiz::widgets::*;
 use termwiz::Error;
 
 use super::keymap::Modes;
-use super::{Keymap, StatusBar};
+use super::{Keymap, SendableUi, StatusBar};
 
 /// This is a widget for our application
 pub struct MainScreen<'a> {
@@ -30,7 +30,7 @@ impl<'a> MainScreen<'a> {
 
     pub fn new_with_widget(
         mut buffer: BufferedTerminal<UnixTerminal>,
-        content: &'a mut String,
+        content: &'a mut String, //FIXME: main issue lays here
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
@@ -45,14 +45,14 @@ impl<'a> MainScreen<'a> {
             },
         ))
     }
-    pub fn setup_ui(self) -> Ui<'a> {
+    pub fn setup_ui(self) -> SendableUi<'a> {
         let mut ui = Ui::new();
         ui.set_root(self);
-        ui
+        SendableUi::new(ui)
     }
     pub fn main_event_loop(
         mut buf: &mut BufferedTerminal<impl Terminal>,
-        mut ui: MutexGuard<Ui>,
+        mut ui: MutexGuard<SendableUi>,
     ) -> Result<(), Error> {
         loop {
             ui.process_event_queue()?;
@@ -99,3 +99,6 @@ impl<'a> MainScreen<'a> {
         Ok(())
     }
 }
+
+unsafe impl<'a> Send for MainScreen<'a> {}
+unsafe impl<'a> Sync for MainScreen<'a> {}

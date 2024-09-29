@@ -6,8 +6,6 @@ use termwiz::surface::{Change, Position, Surface};
 use termwiz::widgets::*;
 
 use super::{Keymap, StatusBar};
-unsafe impl<'a> Send for MainScreen<'a> {}
-unsafe impl<'a> Sync for MainScreen<'a> {}
 
 impl<'a> Widget for MainScreen<'a> {
     fn process_event(&mut self, event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {

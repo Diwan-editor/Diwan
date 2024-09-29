@@ -8,6 +8,8 @@ diwan = { path = "../diwan-lib", package = "diwan-lib" } # the real name of pack
 anyhow = "1.0.69"
 clap = { version = "4.1.4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+termwiz = "0.22.0"
+lazy_static = "1.5.0"
 
 [[bin]]
 name = "dn"
