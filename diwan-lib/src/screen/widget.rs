@@ -44,6 +44,7 @@ impl Widget for MainScreen {
     /// Draw ourselves into the surface provided by RenderArgs
     fn render(&mut self, args: &mut RenderArgs) {
         let text_guareded = self.text.lock().unwrap();
+        let dims = args.surface.dimensions();
         // Apply a dark background and light foreground for dark mode
         args.surface.add_change(Change::ClearScreen(
             ColorAttribute::TrueColorWithPaletteFallback(
@@ -52,15 +53,15 @@ impl Widget for MainScreen {
             ),
         ));
         args.surface
+            .add_change(format!("🤷 surface size is {:?}\r\n", dims));
+        // args.surface.add_change(format!("{:?}", dims));
+        args.surface
             .add_change(Change::Attribute(AttributeChange::Foreground(
                 ColorAttribute::TrueColorWithPaletteFallback(
                     (0xB3, 0x88, 0xFF).into(),
-                    AnsiColor::Green.into(),
+                    AnsiColor::Navy.into(),
                 ),
             )));
-        let dims = args.surface.dimensions();
-        args.surface
-            .add_change(format!("🤷 surface size is {:?}\r\n", dims));
         args.surface.add_change(Change::Text(text_guareded.clone()));
         self.status_bar.render(args);
         // Place the cursor at the end of the text.
@@ -68,13 +69,15 @@ impl Widget for MainScreen {
         // cursor position differently.
         *args.cursor = CursorShapeAndPosition {
             coords: args.surface.cursor_position().into(),
-            shape: termwiz::surface::CursorShape::SteadyBar,
+            shape: termwiz::surface::CursorShape::BlinkingBlock,
             ..Default::default()
         };
     }
-
-    // fn get_size_constraints(&self) -> layout::Constraints {
-    //    let (w, h) = Surface::dimensions();
-    //     layout::Constraints::with_fixed_width_height(80, 80)
-    // }
 }
+// let dims = args.surface.dimensions();
+// args.surface
+//     .add_change(format!("🤷 surface size is {:?}\r\n", dims));
+// fn get_size_constraints(&self) -> layout::Constraints {
+//    let (w, h) = Surface::dimensions();
+//     layout::Constraints::with_fixed_width_height(80, 80)
+// }

@@ -3,7 +3,7 @@ use clap::{
     builder::{styling::AnsiColor, Styles},
     Parser,
 };
-use diwan::screen::{MainScreen, SendableUi};
+use diwan::screen::MainScreen;
 use std::{
     process::exit,
     sync::{Arc, Mutex},
@@ -26,17 +26,24 @@ async fn main() -> Result<(), Error> {
     if arg.man {
         println!("Loading the manual");
     } else {
-        let shared_ui = Arc::new(Mutex::new(SendableUi::new(termwiz::widgets::Ui::new())));
-
-        // First UI BUG: the cursor leaves trace in the editor
+        // init the a new buffered terminal
         let dnbuffer = MainScreen::new_buffered_term()?;
+        // init a mutex string for our poet :)
         let typed_text = Arc::new(Mutex::new(String::new()));
+        // in simplified lang: combine the initialized bufer and content String
+        // and returna mutable buffer and main_screen for displaying everingthing
         let (mut buffer, main_screen) =
             MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
+
+        // set up the ui
+        let shared_ui = Arc::new(Mutex::new(main_screen.setup_ui()));
+
+        // clone the shared ui
         let ui_clone = shared_ui.clone();
         let _ = task::spawn(async move {
+            // lock the ui in order to be used for this green thread
             let mut ui = ui_clone.lock().unwrap();
-            ui.set_root(main_screen);
+            // enter the main loop
             MainScreen::main_event_loop(&mut buffer, &mut ui).unwrap();
         })
         .await;
