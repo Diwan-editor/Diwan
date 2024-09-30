@@ -52,6 +52,8 @@ impl Widget for MainScreen {
                 AnsiColor::Black.into(),
             ),
         ));
+
+        // FIXME(Makarove): The user input is not displayed without below code line which doesn't make sense
         args.surface
             .add_change(format!("🤷 surface size is {:?}\r\n", dims));
         // args.surface.add_change(format!("{:?}", dims));

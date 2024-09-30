@@ -99,6 +99,7 @@ impl Widget for StatusBar {
         let status_text_padded = format!("{:<width$}", self.status_mode, width = dims.0);
 
         // Set the cursor position to the start of the bottom row.
+        // FIXME(Makarove): Issue of status bar that keeps rendering along with text
         args.surface.add_change(Change::CursorPosition {
             x: Position::Relative(0), // Start of the line
             y: Position::Relative(((dims.0 - 1) as u16).try_into().unwrap()), // Bottom row
