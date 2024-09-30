@@ -1,4 +1,7 @@
-use std::process::ExitCode;
+use std::{
+    process::ExitCode,
+    sync::{Arc, Mutex},
+};
 
 use termwiz::{
     input::{InputEvent, KeyCode, KeyEvent},
@@ -62,10 +65,11 @@ impl Keymap {
     }
     pub fn handle_action(
         action: Actions,
-        content: &mut String,
+        content: Arc<Mutex<String>>,
         cursor_pos: &mut usize,
         mode: &mut Modes,
     ) {
+        let mut content_guard = content.lock().unwrap();
         match action {
             Actions::Quit => {
                 println!("Exiting...");
@@ -79,7 +83,7 @@ impl Keymap {
                 }
             }
             Actions::MoveRight => {
-                if *cursor_pos < content.len() {
+                if *cursor_pos < content_guard.len() {
                     *cursor_pos += 1;
                 }
             }
@@ -87,17 +91,17 @@ impl Keymap {
                 // Implement vertical movement logic if necessary
             }
             Actions::InsertChar(c) => {
-                content.insert(*cursor_pos, c);
+                content_guard.insert(*cursor_pos, c);
                 *cursor_pos += 1;
             }
             Actions::DeleteChar => {
                 if *cursor_pos > 0 {
-                    content.remove(*cursor_pos - 1);
+                    content_guard.remove(*cursor_pos - 1);
                     *cursor_pos -= 1;
                 }
             }
             Actions::NewLine => {
-                content.insert(*cursor_pos, '\n');
+                content_guard.insert(*cursor_pos, '\n');
                 *cursor_pos += 1;
             }
         }
@@ -105,8 +109,8 @@ impl Keymap {
     //close and clean terminal
     pub fn close_terminal(buffer: &mut BufferedTerminal<impl Terminal>) -> Result<(), KeymapError> {
         buffer.terminal().exit_alternate_screen()?;
-        // buffer.terminal().set_cooked_mode()?;
+        buffer.terminal().set_cooked_mode()?;
         buffer.terminal().flush()?;
-        std::process::exit(0);
+        Ok(())
     }
 }

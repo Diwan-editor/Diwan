@@ -7,13 +7,18 @@ use termwiz::widgets::*;
 
 use super::{Keymap, StatusBar};
 
-impl<'a> Widget for MainScreen<'a> {
+impl Widget for MainScreen {
     fn process_event(&mut self, event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
         // let mode = Modes::Normal;
         // Keymap::map_key_to_action(event, &mode);
         if let Some(action) = Keymap::map_key_to_action(event, &self.mode) {
             // Use the `handle_action` function to update the state of `MainScreen`
-            Keymap::handle_action(action, self.text, &mut self.cursor_pos, &mut self.mode);
+            Keymap::handle_action(
+                action,
+                self.text.clone(),
+                &mut self.cursor_pos,
+                &mut self.mode,
+            );
             self.status_bar.update(&self.mode);
         }
         // match event {
@@ -38,10 +43,11 @@ impl<'a> Widget for MainScreen<'a> {
 
     /// Draw ourselves into the surface provided by RenderArgs
     fn render(&mut self, args: &mut RenderArgs) {
+        let text_guareded = self.text.lock().unwrap();
         // Apply a dark background and light foreground for dark mode
         args.surface.add_change(Change::ClearScreen(
             ColorAttribute::TrueColorWithPaletteFallback(
-                (0x00, 0x00, 0x00).into(), // Pure black background
+                (0x1d, 0x20, 0x21).into(), // Gruvbox dark background
                 AnsiColor::Black.into(),
             ),
         ));
@@ -55,7 +61,7 @@ impl<'a> Widget for MainScreen<'a> {
         let dims = args.surface.dimensions();
         args.surface
             .add_change(format!("🤷 surface size is {:?}\r\n", dims));
-        args.surface.add_change(self.text.clone());
+        args.surface.add_change(Change::Text(text_guareded.clone()));
         self.status_bar.render(args);
         // Place the cursor at the end of the text.
         // A more advanced text editing widget would manage the
@@ -71,36 +77,4 @@ impl<'a> Widget for MainScreen<'a> {
     //    let (w, h) = Surface::dimensions();
     //     layout::Constraints::with_fixed_width_height(80, 80)
     // }
-}
-
-// TODO(change path): this status bar should be someweher else not here.
-impl Widget for StatusBar {
-    fn process_event(&mut self, _event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
-        // The status bar is static and doesn't need to process events in this example.
-        false
-    }
-
-    fn render(&mut self, args: &mut RenderArgs) {
-        let dims = args.surface.dimensions();
-        let status_text_padded = format!("{:<width$}", self.status_text, width = dims.0);
-        args.surface.add_change(Change::CursorPosition {
-            x: Position::Relative(0), // x position at the start of the line
-            y: Position::Relative(((dims.1 - 1) as u16).try_into().unwrap()), // y position at the last row
-        });
-        args.surface
-            .add_change(Change::Attribute(AttributeChange::Foreground(
-                ColorAttribute::TrueColorWithPaletteFallback(
-                    (0xFF, 0xFF, 0xFF).into(), // White text
-                    AnsiColor::White.into(),
-                ),
-            )));
-        args.surface
-            .add_change(Change::Attribute(AttributeChange::Background(
-                ColorAttribute::TrueColorWithPaletteFallback(
-                    (0x80, 0x00, 0x80).into(), // Black background
-                    AnsiColor::Purple.into(),
-                ),
-            )));
-        args.surface.add_change(Change::Text(status_text_padded));
-    }
 }

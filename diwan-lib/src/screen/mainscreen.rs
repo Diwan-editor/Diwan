@@ -1,4 +1,4 @@
-use std::sync::MutexGuard;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use termwiz::caps::Capabilities;
 use termwiz::input::*;
@@ -12,25 +12,25 @@ use super::keymap::Modes;
 use super::{Keymap, SendableUi, StatusBar};
 
 /// This is a widget for our application
-pub struct MainScreen<'a> {
+pub struct MainScreen {
     /// Holds the input text that we wish the widget to display
-    pub text: &'a mut String,
+    pub text: Arc<Mutex<String>>,
     pub mode: Modes,
     pub cursor_pos: usize,
     pub status_bar: StatusBar,
 }
 
-impl<'a> MainScreen<'a> {
+impl MainScreen {
     pub fn new_buffered_term() -> Result<BufferedTerminal<UnixTerminal>, Error> {
         let caps = Capabilities::new_from_env()?;
         let term = UnixTerminal::new(caps)?;
         let buffer = BufferedTerminal::new(term)?;
-        return Ok(buffer);
+        Ok(buffer)
     }
 
     pub fn new_with_widget(
         mut buffer: BufferedTerminal<UnixTerminal>,
-        content: &'a mut String, //FIXME: main issue lays here
+        content: Arc<Mutex<String>>,
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
@@ -45,14 +45,16 @@ impl<'a> MainScreen<'a> {
             },
         ))
     }
-    pub fn setup_ui(self) -> SendableUi<'a> {
+
+    pub fn setup_ui(self) -> SendableUi<'static> {
         let mut ui = Ui::new();
         ui.set_root(self);
         SendableUi::new(ui)
     }
+
     pub fn main_event_loop(
         mut buf: &mut BufferedTerminal<impl Terminal>,
-        mut ui: MutexGuard<SendableUi>,
+        ui: &mut SendableUi,
     ) -> Result<(), Error> {
         loop {
             ui.process_event_queue()?;
@@ -82,7 +84,8 @@ impl<'a> MainScreen<'a> {
                         ..
                     }) => {
                         // Quit the app when escape is pressed
-                        Keymap::close_terminal(buf).unwrap();
+                        Keymap::close_terminal(buf).unwrap(); //FIXME: shutdown
+                        break;
                     }
                     input => {
                         // Feed input into the Ui
@@ -100,5 +103,5 @@ impl<'a> MainScreen<'a> {
     }
 }
 
-unsafe impl<'a> Send for MainScreen<'a> {}
-unsafe impl<'a> Sync for MainScreen<'a> {}
+unsafe impl Send for MainScreen {}
+unsafe impl Sync for MainScreen {}
