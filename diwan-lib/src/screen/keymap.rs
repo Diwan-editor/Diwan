@@ -109,7 +109,6 @@ impl Keymap {
     //close and clean terminal
     pub fn close_terminal(buffer: &mut BufferedTerminal<impl Terminal>) -> Result<(), KeymapError> {
         buffer.terminal().exit_alternate_screen()?;
-        buffer.terminal().set_cooked_mode()?;
         buffer.terminal().flush()?;
         Ok(())
     }
