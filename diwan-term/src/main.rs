@@ -28,32 +28,31 @@ async fn main() -> Result<(), Error> {
     } else {
         let shared_ui = Arc::new(Mutex::new(SendableUi::new(termwiz::widgets::Ui::new())));
 
-        // First UI
+        // First UI BUG: the cursor leaves trace in the editor
         let dnbuffer = MainScreen::new_buffered_term()?;
         let typed_text = Arc::new(Mutex::new(String::new()));
         let (mut buffer, main_screen) =
             MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
         let ui_clone = shared_ui.clone();
-        task::spawn(async move {
+        let _ = task::spawn(async move {
             let mut ui = ui_clone.lock().unwrap();
             ui.set_root(main_screen);
             MainScreen::main_event_loop(&mut buffer, &mut ui).unwrap();
-        });
+        })
+        .await;
+        // // Second UI
+        // let dnbuffer2 = MainScreen::new_buffered_term()?;
+        // let typed_text2 = Arc::new(Mutex::new(String::new()));
+        // let (mut buffer2, main_screen2) =
+        //     MainScreen::new_with_widget(dnbuffer2, Arc::clone(&typed_text2))?;
+        // let ui_clone2 = shared_ui.clone();
 
-        // Second UI
-        let dnbuffer2 = MainScreen::new_buffered_term()?;
-        let typed_text2 = Arc::new(Mutex::new(String::new()));
-        let (mut buffer2, main_screen2) =
-            MainScreen::new_with_widget(dnbuffer2, Arc::clone(&typed_text2))?;
-        let ui_clone2 = shared_ui.clone();
-
-        task::spawn(async move {
-            let mut ui = ui_clone2.lock().unwrap();
-            let _widget_id = ui.add(None, main_screen2);
-            MainScreen::main_event_loop(&mut buffer2, &mut ui).unwrap();
-        });
-        //FIXME: Wait for Ctrl+C signal
-        tokio::signal::ctrl_c().await?;
+        // task::spawn(async move {
+        //     let mut ui = ui_clone2.lock().unwrap();
+        //     let _widget_id = ui.add(None, main_screen2);
+        //     MainScreen::main_event_loop(&mut buffer2, &mut ui).unwrap();
+        // });
+        // tokio::signal::ctrl_c().await?;
         println!("Shutting down...");
         exit(0);
     }
