@@ -1,7 +1,6 @@
 use crate::screen::MainScreen;
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
-use termwiz::input::*;
 use termwiz::surface::{Change, Position, Surface};
 use termwiz::widgets::*;
 
@@ -9,10 +8,7 @@ use super::{Keymap, StatusBar};
 
 impl Widget for MainScreen {
     fn process_event(&mut self, event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
-        // let mode = Modes::Normal;
-        // Keymap::map_key_to_action(event, &mode);
         if let Some(action) = Keymap::map_key_to_action(event, &self.mode) {
-            // Use the `handle_action` function to update the state of `MainScreen`
             Keymap::handle_action(
                 action,
                 self.text.clone(),
@@ -21,31 +17,12 @@ impl Widget for MainScreen {
             );
             self.status_bar.update(&self.mode);
         }
-        // match event {
-        //     WidgetEvent::Input(InputEvent::Key(KeyEvent {
-        //         key: KeyCode::Char(c),
-        //         ..
-        //     })) => self.text.push(*c),
-        //     WidgetEvent::Input(InputEvent::Key(KeyEvent {
-        //         key: KeyCode::Enter,
-        //         ..
-        //     })) => {
-        //         self.text.push_str("\r\n");
-        //     }
-        //     WidgetEvent::Input(InputEvent::Paste(s)) => {
-        //         self.text.push_str(&s);
-        //     }
-        //     _ => {}
-        // }
-
         true
     }
-
-    /// Draw ourselves into the surface provided by RenderArgs
     fn render(&mut self, args: &mut RenderArgs) {
-        let text_guareded = self.text.lock().unwrap();
+        let text_guarded = self.text.lock().unwrap();
         let dims = args.surface.dimensions();
-        // Apply a dark background and light foreground for dark mode
+
         args.surface.add_change(Change::ClearScreen(
             ColorAttribute::TrueColorWithPaletteFallback(
                 (0x1d, 0x20, 0x21).into(), // Gruvbox dark background
@@ -53,33 +30,25 @@ impl Widget for MainScreen {
             ),
         ));
 
-        // FIXME(Makarove): The user input is not displayed without below code line which doesn't make sense
-        args.surface
-            .add_change(format!("🤷 surface size is {:?}\r\n", dims));
-        // args.surface.add_change(format!("{:?}", dims));
-        args.surface
-            .add_change(Change::Attribute(AttributeChange::Foreground(
-                ColorAttribute::TrueColorWithPaletteFallback(
-                    (0xB3, 0x88, 0xFF).into(),
-                    AnsiColor::Navy.into(),
-                ),
-            )));
-        args.surface.add_change(Change::Text(text_guareded.clone()));
-        self.status_bar.render(args);
-        // Place the cursor at the end of the text.
-        // A more advanced text editing widget would manage the
-        // cursor position differently.
+        // Render the text
+        let lines: Vec<&str> = text_guarded.lines().collect();
+        for line in lines {
+            args.surface.add_change(format!("{}\r\n", line));
+        }
+
+        // Update the status bar (left: mode, center: filename, right: cursor position)
+        self.status_bar.render(args, self.cursor_pos);
+
+        // Place the cursor at the correct position
+        args.surface.add_change(Change::CursorPosition {
+            x: Position::Absolute(self.cursor_pos.0),
+            y: Position::Absolute(self.cursor_pos.1),
+        });
+
         *args.cursor = CursorShapeAndPosition {
-            coords: args.surface.cursor_position().into(),
+            coords: ParentRelativeCoords::new(self.cursor_pos.0, self.cursor_pos.1),
             shape: termwiz::surface::CursorShape::BlinkingBlock,
             ..Default::default()
         };
     }
 }
-// let dims = args.surface.dimensions();
-// args.surface
-//     .add_change(format!("🤷 surface size is {:?}\r\n", dims));
-// fn get_size_constraints(&self) -> layout::Constraints {
-//    let (w, h) = Surface::dimensions();
-//     layout::Constraints::with_fixed_width_height(80, 80)
-// }

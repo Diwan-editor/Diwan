@@ -1,31 +1,28 @@
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 
 use termwiz::caps::Capabilities;
 use termwiz::input::*;
 use termwiz::surface::{Change, Position};
 use termwiz::terminal::UnixTerminal;
-use termwiz::terminal::{buffered::BufferedTerminal, new_terminal, Terminal};
-use termwiz::widgets::*;
+use termwiz::terminal::{buffered::BufferedTerminal, Terminal};
+use termwiz::widgets::{Ui, WidgetEvent};
 use termwiz::Error;
 
 use super::keymap::Modes;
 use super::{Keymap, SendableUi, StatusBar};
 
-/// The `MainScreen` is a struct that deals with rendering
-/// the main screen of Diwan editor.
+/// The `MainScreen` is a struct that deals with rendering the main screen of the Diwan editor.
 pub struct MainScreen {
-    /// Holds the input text that we wish the widget to display
+    /// Holds the input text that we wish the widget to display.
     pub text: Arc<Mutex<String>>,
-    /// Modes to let the user know what mode he/she in
+    /// Modes to let the user know what mode they are in.
     pub mode: Modes,
-    /// cursor position
-    pub cursor_pos: usize,
-    /// status bar that feed the user with necessary information (mode, filename, cursor xy, language, and gitflow)
+    /// cursor position represented by (x, y) coordinates.
+    pub cursor_pos: (usize, usize),
+    /// status bar that feeds the user with necessary information (mode, filename, cursor xy, etc.).
     pub status_bar: StatusBar,
 }
 
-/// Creates and returns a `MainScreen` object using a buffered terminal.
-/// Initializes the terminal and sets up the UI components for interaction.
 impl MainScreen {
     /// # new_buffered_term
     /// function that returns a `Result<BufferedTerminal<UnixTerminal>, Error>`
@@ -36,7 +33,6 @@ impl MainScreen {
         let buffer = BufferedTerminal::new(term)?;
         Ok(buffer)
     }
-
     /// Creates a new instance of the struct along with a terminal buffer and initializes a status bar.
     ///
     /// This function sets up the terminal in raw mode and enters an alternate screen mode.
@@ -72,13 +68,13 @@ impl MainScreen {
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
-        let status_bar = StatusBar::new();
+        let status_bar = StatusBar::new("main.rs", "NORMAL");
         Ok((
             buffer,
             Self {
                 text: content,
                 mode: Modes::Normal,
-                cursor_pos: 0,
+                cursor_pos: (0, 0),
                 status_bar,
             },
         ))
@@ -104,7 +100,6 @@ impl MainScreen {
         ui.set_root(self);
         SendableUi::new(ui)
     }
-
     /// Main event loop for handling terminal input and refreshing the UI.
     ///
     /// # Arguments
@@ -119,22 +114,13 @@ impl MainScreen {
         loop {
             ui.process_event_queue()?;
 
-            // After updating and processing all of the widgets, compose them
-            // and render them to the screen.
             if ui.render_to_screen(buf)? {
-                // We have more events to process immediately; don't block waiting
-                // for input below, but jump to the top of the loop to re-run the
-                // updates.
                 continue;
             }
-            // Compute an optimized delta to apply to the terminal and display it
             buf.flush()?;
 
-            // Wait for user input
             match buf.terminal().poll_input(None) {
                 Ok(Some(InputEvent::Resized { rows, cols })) => {
-                    // FIXME: this is working around a bug where we don't realize
-                    // that we should redraw everything on resize in BufferedTerminal.
                     buf.add_change(Change::ClearScreen(Default::default()));
                     buf.resize(cols, rows);
                 }
@@ -143,18 +129,16 @@ impl MainScreen {
                         key: KeyCode::Char('q'),
                         modifiers: Modifiers::ALT,
                     }) => {
-                        // Quit the app when escape is pressed
                         Keymap::close_terminal(buf).unwrap();
                         break;
                     }
                     input => {
-                        // Feed input into the Ui
                         ui.queue_event(WidgetEvent::Input(input));
                     }
                 },
                 Ok(None) => {}
                 Err(e) => {
-                    print!("{:?}\r\n", e);
+                    println!("{:?}\r\n", e);
                     break;
                 }
             }

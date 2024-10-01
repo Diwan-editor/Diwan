@@ -1,10 +1,8 @@
+use super::{MainScreen, Modes};
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
-use termwiz::input::*;
-use termwiz::surface::{Change, Position, Surface};
+use termwiz::surface::{Change, Position};
 use termwiz::widgets::*;
-
-use super::Modes;
 
 /// `StatusBar` is a widget used to display information
 /// about the current state of the editor. This includes:
@@ -21,21 +19,31 @@ pub struct StatusBar {
     /// the status bar.
     /// </div>
     pub status_mode: String,
+    /// <div>
+    /// <code>Filename:</code> Stores the filename (e.g. <code>dummy.rs</code>) which will be displayed in
+    /// the status bar.
+    /// </div>
+    pub filename: String,
 }
 
 impl StatusBar {
-    /// Creates a new `StatusBar` instance with the default mode.
+    /// Creates a new `StatusBar` instance with the specified filename and mode.
+    ///
+    /// # Arguments
+    /// * `filename` - The name of the file to be displayed in the status bar.
+    /// * `status_mode` - The current mode (e.g., "NORMAL" or "INSERT").
     ///
     /// # Returns
-    /// A new `StatusBar` initialized with "NORMAL" as the mode.
+    /// A new `StatusBar` initialized with the provided filename and mode.
     ///
     /// # Example
     /// ```
-    /// let status_bar = StatusBar::new();
+    /// let status_bar = StatusBar::new("dummy.rs", "NORMAL");
     /// ```
-    pub fn new() -> Self {
+    pub fn new(filename: &str, status_mode: &str) -> Self {
         Self {
-            status_mode: "NORMAL".to_string(),
+            status_mode: status_mode.to_string(),
+            filename: filename.to_string(),
         }
     }
     /// Updates the `status_mode` of the `StatusBar` based on the current mode.
@@ -56,74 +64,60 @@ impl StatusBar {
     /// status_bar.update(&Modes::Insert);
     /// ```
     pub fn update(&mut self, mode: &Modes) {
-        // Update the status_mode field with the current mode.
-        self.status_mode = format!("{}", mode);
+        self.status_mode = format!("{:?}", mode);
     }
-}
-
-/// Implementation of the `Widget` trait for `StatusBar`, which allows it to be
-/// used as part of the UI. This trait defines how the widget handles events
-/// and how it should be rendered on the screen.
-impl Widget for StatusBar {
-    /// Processes any events passed to the `StatusBar`.
-    ///
-    /// Since the `StatusBar` is static (i.e., it doesn't respond to events
-    /// directly), this function always returns `false`.
+    /// Renders the status bar at the bottom of the screen.
     ///
     /// # Arguments
-    /// * `_event` - The event to process.
-    /// * `_args` - Additional arguments related to the event.
+    /// * `args` - A mutable reference to `RenderArgs`, which provides the rendering context.
+    /// * `cursor_pos` - A tuple representing the cursor position (line, column) in the editor.
     ///
-    /// # Returns
-    /// Always returns `false` because the `StatusBar` doesn't respond to events.
-    fn process_event(&mut self, _event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
-        false
-    }
-
-    /// Renders the `StatusBar` on the terminal surface.
-    ///
-    /// This function positions the status bar at the bottom row of the terminal,
-    /// with white text on a purple background. It fills the entire row with the
-    /// current mode (e.g., "NORMAL") and pads the remaining space with spaces.
-    ///
-    /// # Arguments
-    /// * `args` - The rendering arguments, including the surface to render on.
-    fn render(&mut self, args: &mut RenderArgs) {
-        // Get the terminal dimensions (width and height).
+    /// This function adds changes to the surface to display the status bar with the current mode,
+    /// filename, and cursor position.
+    pub fn render(&mut self, args: &mut RenderArgs, cursor_pos: (usize, usize)) {
         let dims = args.surface.dimensions();
 
-        // Define padding values
-        let left_padding = 4;
-        let vertical_offset = 1;
-        // Create a padded status text to fill the entire width of the terminal.
-        let status_text_padded = format!("{:<width$}", self.status_mode, width = dims.0);
+        // Ensure that we don't subtract below 0 (which would cause overflow)
+        let min_width = 40; // Minimum width for the status text layout
+        let width_for_center = if dims.0 > min_width {
+            dims.0 - min_width
+        } else {
+            // If terminal width is too small, set to 0 to prevent negative width
+            0
+        };
 
-        // Set the cursor position to the start of the bottom row.
-        // FIXME(Makarove): Issue of status bar that keeps rendering along with text
+        // Create the string that shows the cursor position (e.g., "Ln 3, Col 5")
+        let cursor_pos_text = format!("{}:{}", cursor_pos.1 + 1, cursor_pos.0 + 1); // Convert to 1-based indexing
+        let status_text = format!(
+            "{:<20}{:^width$}{:>20}",
+            self.status_mode.to_uppercase(), // FIXME(In future): the uppercase is not applicable regardles the impl of fmt::Display of Modes enum
+            self.filename,
+            cursor_pos_text,
+            width = width_for_center
+        );
+
         args.surface.add_change(Change::CursorPosition {
-            x: Position::Relative(0), // Start of the line
-            y: Position::Relative(((dims.0 - 1) as u16).try_into().unwrap()), // Bottom row
+            x: Position::Relative(0),
+            y: Position::Relative((dims.1 - 1) as isize), // Position at the last row
         });
 
-        // Set the foreground (text) color to white.
+        // White text on a dark background for the status bar
         args.surface
             .add_change(Change::Attribute(AttributeChange::Foreground(
                 ColorAttribute::TrueColorWithPaletteFallback(
-                    (0xFF, 0xFF, 0xFF).into(), // RGB for white
+                    (0xFF, 0xFF, 0xFF).into(),
                     AnsiColor::White.into(),
                 ),
             )));
-
-        // Set the background color to purple.
         args.surface
             .add_change(Change::Attribute(AttributeChange::Background(
                 ColorAttribute::TrueColorWithPaletteFallback(
-                    (0x28, 0x28, 0x28).into(), // RGB for purple
+                    (0x28, 0x28, 0x28).into(),
                     AnsiColor::Maroon.into(),
                 ),
             )));
 
-        // Render the padded status text.
-        args.surface.add_change(Change::Text(status_text_padded));
+        // Render the status text with mode, filename, and cursor position
+        args.surface.add_change(Change::Text(status_text));
     }
 }

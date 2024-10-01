@@ -95,52 +95,77 @@ impl Keymap {
     ///
     /// - `action`: The action to perform.
     /// - `content`: Shared mutable string content.
-    /// - `cursor_pos`: Mutable reference to the cursor position.
+    /// - `cursor_pos`: Mutable reference to the cursor position as usize tuple.
     /// - `mode`: Mutable reference to the current mode.
     pub fn handle_action(
         action: Actions,
         content: Arc<Mutex<String>>,
-        cursor_pos: &mut usize,
+        cursor_pos: &mut (usize, usize),
         mode: &mut Modes,
     ) {
         let mut content_guard = content.lock().unwrap();
+        let lines: Vec<&str> = content_guard.lines().collect();
+
         match action {
-            Actions::Quit => {
-                println!("Exiting...");
-                std::process::exit(0)
-            }
+            Actions::Quit => std::process::exit(0),
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::MoveLeft => {
-                if *cursor_pos > 0 {
-                    *cursor_pos -= 1;
+                if cursor_pos.0 > 0 {
+                    cursor_pos.0 -= 1;
+                } else if cursor_pos.1 > 0 {
+                    cursor_pos.1 -= 1;
+                    cursor_pos.0 = lines[cursor_pos.1].len();
                 }
             }
             Actions::MoveRight => {
-                if *cursor_pos < content_guard.len() {
-                    *cursor_pos += 1;
+                if cursor_pos.0 < lines[cursor_pos.1].len() {
+                    cursor_pos.0 += 1;
+                } else if cursor_pos.1 < lines.len() - 1 {
+                    cursor_pos.1 += 1;
+                    cursor_pos.0 = 0;
                 }
             }
-            Actions::MoveUp | Actions::MoveDown => {
-                // Implement vertical movement logic if necessary
+            Actions::MoveUp => {
+                if cursor_pos.1 > 0 {
+                    cursor_pos.1 -= 1;
+                    cursor_pos.0 = cursor_pos.0.min(lines[cursor_pos.1].len());
+                }
+            }
+            Actions::MoveDown => {
+                if cursor_pos.1 < lines.len() - 1 {
+                    cursor_pos.1 += 1;
+                    cursor_pos.0 = cursor_pos.0.min(lines[cursor_pos.1].len());
+                }
             }
             Actions::InsertChar(c) => {
-                content_guard.insert(*cursor_pos, c);
-                *cursor_pos += 1;
-            }
-            Actions::DeleteChar => {
-                if *cursor_pos > 0 {
-                    content_guard.remove(*cursor_pos - 1);
-                    *cursor_pos -= 1;
-                }
+                // Find the byte position in the content_guard from the cursor_pos (line, column)
+                let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum(); // +1 for newline
+                let byte_pos = line_start + cursor_pos.0;
+
+                // Insert the character into the string at the calculated byte position
+                content_guard.insert(byte_pos, c);
+                cursor_pos.0 += 1;
             }
             Actions::NewLine => {
-                content_guard.insert(*cursor_pos, '\n');
-                *cursor_pos += 1;
+                let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum();
+                let byte_pos = line_start + cursor_pos.0;
+
+                content_guard.insert(byte_pos, '\n');
+                cursor_pos.1 += 1;
+                cursor_pos.0 = 0;
+            }
+            Actions::DeleteChar => {
+                if cursor_pos.0 > 0 {
+                    let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum();
+                    let byte_pos = line_start + cursor_pos.0;
+
+                    content_guard.remove(byte_pos - 1);
+                    cursor_pos.0 -= 1;
+                }
             }
         }
     }
-
     /// Cleans up and closes the terminal.
     ///
     /// # Parameters
