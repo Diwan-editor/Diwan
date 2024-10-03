@@ -31,8 +31,6 @@ feel free to check out Diwan's [official documentation](https://diwan-editor.git
 
 # Diwan Text Editor - MVP To-Do List
 
-## Logo
-- [ ] a logo is needed for Diwan's community.
 ## Core Features
 - [ ] **Implement logic for closing the editor gracefully**  
   Ensure Diwan has a proper mechanism to close, saving any necessary state and cleaning up resources.
