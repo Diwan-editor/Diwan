@@ -12,7 +12,8 @@ impl Widget for MainScreen {
             Keymap::handle_action(
                 action,
                 self.text.clone(),
-                &mut self.cursor_pos,
+                &mut self.cursor_x,
+                &mut self.cursor_y,
                 &mut self.mode,
             );
             self.status_bar.update(&self.mode);
@@ -37,16 +38,16 @@ impl Widget for MainScreen {
         }
 
         // Update the status bar (left: mode, center: filename, right: cursor position)
-        self.status_bar.render(args, self.cursor_pos);
+        self.status_bar.render(args, self.cursor_x, self.cursor_y);
 
         // Place the cursor at the correct position
         args.surface.add_change(Change::CursorPosition {
-            x: Position::Absolute(self.cursor_pos.0),
-            y: Position::Absolute(self.cursor_pos.1),
+            x: Position::Absolute(self.cursor_x),
+            y: Position::Absolute(self.cursor_y),
         });
 
         *args.cursor = CursorShapeAndPosition {
-            coords: ParentRelativeCoords::new(self.cursor_pos.0, self.cursor_pos.1),
+            coords: ParentRelativeCoords::new(self.cursor_x, self.cursor_y),
             shape: match self.mode {
                 Modes::Normal => termwiz::surface::CursorShape::BlinkingBlock,
                 Modes::Insert => termwiz::surface::CursorShape::BlinkingBar,

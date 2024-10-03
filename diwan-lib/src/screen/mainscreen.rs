@@ -17,8 +17,10 @@ pub struct MainScreen {
     pub text: Arc<Mutex<String>>,
     /// Modes to let the user know what mode they are in.
     pub mode: Modes,
-    /// cursor position represented by (x, y) coordinates.
-    pub cursor_pos: (usize, usize),
+    /// cursor position x
+    pub cursor_x: usize,
+    /// cursor position y
+    pub cursor_y: usize,
     /// status bar that feeds the user with necessary information (mode, filename, cursor xy, etc.).
     pub status_bar: StatusBar,
 }
@@ -74,7 +76,8 @@ impl MainScreen {
             Self {
                 text: content,
                 mode: Modes::Normal,
-                cursor_pos: (0, 0),
+                cursor_x: 0,
+                cursor_y: 0,
                 status_bar,
             },
         ))

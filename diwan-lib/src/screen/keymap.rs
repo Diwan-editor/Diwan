@@ -64,7 +64,7 @@ impl Keymap {
         if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, .. })) = event {
             match mode {
                 Modes::Normal => match key {
-                    // KeyCode::Char('q') => Some(Actions::Quit),
+                    KeyCode::Char('q') => Some(Actions::Quit),
                     KeyCode::Char('h') | KeyCode::LeftArrow => Some(Actions::MoveLeft),
                     KeyCode::Char('j') | KeyCode::DownArrow => Some(Actions::MoveDown),
                     KeyCode::Char('k') | KeyCode::UpArrow => Some(Actions::MoveUp),
@@ -95,12 +95,14 @@ impl Keymap {
     ///
     /// - `action`: The action to perform.
     /// - `content`: Shared mutable string content.
-    /// - `cursor_pos`: Mutable reference to the cursor position as usize tuple.
+    /// - `cursor_x`: Mutable reference to the cursor position along the x-axis.
+    /// - `cursor_y`: Mutable reference to the cursor position along the y-axis.
     /// - `mode`: Mutable reference to the current mode.
     pub fn handle_action(
         action: Actions,
         content: Arc<Mutex<String>>,
-        cursor_pos: &mut (usize, usize),
+        cursor_x: &mut usize,
+        cursor_y: &mut usize,
         mode: &mut Modes,
     ) {
         let mut content_guard = content.lock().unwrap();
@@ -110,62 +112,96 @@ impl Keymap {
             Actions::Quit => std::process::exit(0),
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
-            Actions::MoveLeft => {
-                if cursor_pos.0 > 0 {
-                    cursor_pos.0 -= 1;
-                } else if cursor_pos.1 > 0 {
-                    cursor_pos.1 -= 1;
-                    cursor_pos.0 = lines[cursor_pos.1].len();
-                }
-            }
-            Actions::MoveRight => {
-                if cursor_pos.0 < lines[cursor_pos.1].len() {
-                    cursor_pos.0 += 1;
-                } else if cursor_pos.1 < lines.len() - 1 {
-                    cursor_pos.1 += 1;
-                    cursor_pos.0 = 0;
-                }
-            }
-            Actions::MoveUp => {
-                if cursor_pos.1 > 0 {
-                    cursor_pos.1 -= 1;
-                    cursor_pos.0 = cursor_pos.0.min(lines[cursor_pos.1].len());
-                }
-            }
-            Actions::MoveDown => {
-                if cursor_pos.1 < lines.len() - 1 {
-                    cursor_pos.1 += 1;
-                    cursor_pos.0 = cursor_pos.0.min(lines[cursor_pos.1].len());
-                }
-            }
-            Actions::InsertChar(c) => {
-                // Find the byte position in the content_guard from the cursor_pos (line, column)
-                let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum(); // +1 for newline
-                let byte_pos = line_start + cursor_pos.0;
-
-                // Insert the character into the string at the calculated byte position
-                content_guard.insert(byte_pos, c);
-                cursor_pos.0 += 1;
-            }
-            Actions::NewLine => {
-                let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum();
-                let byte_pos = line_start + cursor_pos.0;
-
-                content_guard.insert(byte_pos, '\n');
-                cursor_pos.1 += 1;
-                cursor_pos.0 = 0;
-            }
-            Actions::DeleteChar => {
-                if cursor_pos.0 > 0 {
-                    let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum();
-                    let byte_pos = line_start + cursor_pos.0;
-
-                    content_guard.remove(byte_pos - 1);
-                    cursor_pos.0 -= 1;
-                }
-            }
+            Actions::MoveLeft => Self::move_cursor_left(cursor_x, cursor_y, &lines),
+            Actions::MoveRight => Self::move_cursor_right(cursor_x, cursor_y, &lines),
+            Actions::MoveUp => Self::move_cursor_up(cursor_x, cursor_y, &lines),
+            Actions::MoveDown => Self::move_cursor_down(cursor_x, cursor_y, &lines),
+            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
+            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
+            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content_guard),
         }
     }
+
+    /// Inserts a character at the cursor position.
+    fn insert_char(c: char, cursor_x: &mut usize, cursor_y: &mut usize, content: &mut String) {
+        let lines: Vec<&str> = content.lines().collect();
+        let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
+
+        content.insert(byte_pos, c);
+        *cursor_x += 1;
+    }
+
+    /// Inserts a new line at the cursor position.
+    fn insert_newline(cursor_x: &mut usize, cursor_y: &mut usize, content: &mut String) {
+        let lines: Vec<&str> = content.lines().collect();
+        let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
+
+        content.insert(byte_pos, '\n');
+        *cursor_x = 0;
+        *cursor_y += 1;
+    }
+
+    /// Deletes a character before the cursor.
+    fn delete_char(cursor_x: &mut usize, cursor_y: &mut usize, content: &mut String) {
+        if *cursor_x == 0 && *cursor_y == 0 {
+            return;
+        }
+
+        let lines: Vec<&str> = content.lines().collect();
+        let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
+
+        if *cursor_x > 0 {
+            content.remove(byte_pos - 1);
+            *cursor_x -= 1;
+        } else {
+            *cursor_y -= 1;
+            *cursor_x = lines[*cursor_y].len();
+            content.remove(byte_pos - 1);
+        }
+    }
+
+    /// Moves the cursor up.
+    fn move_cursor_up(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
+        if *cursor_y > 0 {
+            *cursor_y -= 1;
+            *cursor_x = *cursor_x.min(&mut lines[*cursor_y].len());
+        }
+    }
+
+    /// Moves the cursor down.
+    fn move_cursor_down(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
+        if *cursor_y < lines.len() - 1 {
+            *cursor_y += 1;
+            *cursor_x = *cursor_x.min(&mut lines[*cursor_y].len());
+        }
+    }
+
+    /// Moves the cursor left.
+    fn move_cursor_left(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
+        if *cursor_x > 0 {
+            *cursor_x -= 1;
+        } else if *cursor_y > 0 {
+            *cursor_y -= 1;
+            *cursor_x = lines[*cursor_y].len();
+        }
+    }
+
+    /// Moves the cursor right.
+    fn move_cursor_right(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
+        if *cursor_x < lines[*cursor_y].len() {
+            *cursor_x += 1;
+        } else if *cursor_y < lines.len() - 1 {
+            *cursor_y += 1;
+            *cursor_x = 0;
+        }
+    }
+
+    /// Returns the byte position in the content string based on the current cursor position.
+    fn get_byte_position(lines: &[&str], cursor_pos: (usize, usize)) -> usize {
+        let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum();
+        line_start + cursor_pos.0
+    }
+
     /// Cleans up and closes the terminal.
     ///
     /// # Parameters

@@ -74,7 +74,7 @@ impl StatusBar {
     ///
     /// This function adds changes to the surface to display the status bar with the current mode,
     /// filename, and cursor position.
-    pub fn render(&mut self, args: &mut RenderArgs, cursor_pos: (usize, usize)) {
+    pub fn render(&mut self, args: &mut RenderArgs, cursor_x: usize, cursor_y: usize) {
         let dims = args.surface.dimensions();
 
         // Ensure that we don't subtract below 0 (which would cause overflow)
@@ -87,7 +87,7 @@ impl StatusBar {
         };
 
         // Create the string that shows the cursor position (e.g., "Ln 3, Col 5")
-        let cursor_pos_text = format!("{}:{}", cursor_pos.1 + 1, cursor_pos.0 + 1); // Convert to 1-based indexing
+        let cursor_pos_text = format!("{}:{}", cursor_x + 1, cursor_y + 1); // Convert to 1-based indexing
         let status_text = format!(
             "{:<20}{:^width$}{:>20}",
             self.status_mode.to_uppercase(), // FIXME(In future): the uppercase is not applicable regardles the impl of fmt::Display of Modes enum
