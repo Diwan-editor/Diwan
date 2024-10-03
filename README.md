@@ -1,13 +1,19 @@
 <div align="center">
 <!-- make the headline bold and font-size biger -->
     <h1 style="font-size: 50px; font-weight: bold;">Diwan</h1>
-
-[![GitHub Release](https://img.shields.io/github/v/release/Diwan-editor/Diwan)](https://github.com/Diwan-editor/Diwan/releases/latest)
-[![GitHub contributors](https://img.shields.io/github/contributors/Diwan-editor/Diwan)](https://github.com/Diwan-editor/Diwan/graphs/contributors)
-![GitHub top language](https://img.shields.io/github/languages/top/Diwan-editor/Diwan?style=flat&logo=rust&logoSize=auto&color=%23b7410e)
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/Diwan-editor/Diwan/main?style=flat&logo=github)
-![Discord](https://img.shields.io/discord/1291098006430421012?label=Discord)
-
+    <img alt="GitHub Release" src="https://img.shields.io/github/v/release/Diwan-editor/Diwan">
+    <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/Diwan-editor/Diwan">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/Diwan-editor/Diwan">
+<!-- with links -->
+    <a href="https://github.com/Diwan-editor/Diwan/pulls" target="blank">
+    <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr/Diwan-editor/Diwan">
+    </a>
+    <a href="https://github.com/Diwan-editor/Diwan/issues" target="blank">
+    <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/Diwan-editor/Diwan">
+    </a>
+    <a href="https://discord.gg/A8Skc9mMfG" target="blank">
+    <img alt="Discord" src="https://img.shields.io/discord/1291098006430421012?label=be%20part%20of%20community">
+    </a>
 </div>
 Diwan is a Rust-based editor designed for performance, memory safety, and concurrency,
 providing a fast, efficient, and secure user experience. Inspired by the rich
