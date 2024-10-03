@@ -4,7 +4,7 @@ use termwiz::color::{AnsiColor, ColorAttribute};
 use termwiz::surface::{Change, Position, Surface};
 use termwiz::widgets::*;
 
-use super::{Keymap, StatusBar};
+use super::{Keymap, Modes, StatusBar};
 
 impl Widget for MainScreen {
     fn process_event(&mut self, event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
@@ -47,7 +47,10 @@ impl Widget for MainScreen {
 
         *args.cursor = CursorShapeAndPosition {
             coords: ParentRelativeCoords::new(self.cursor_pos.0, self.cursor_pos.1),
-            shape: termwiz::surface::CursorShape::BlinkingBlock,
+            shape: match self.mode {
+                Modes::Normal => termwiz::surface::CursorShape::BlinkingBlock,
+                Modes::Insert => termwiz::surface::CursorShape::BlinkingBar,
+            },
             ..Default::default()
         };
     }
