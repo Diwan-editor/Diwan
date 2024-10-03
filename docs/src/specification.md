@@ -1,56 +1,89 @@
 ## General Specification for the project !   
 > This is a temporary initial specification to help achieve the first user journey, consisting of opening a file editing and saving it into the filesystem !    
 --- 
-> This Specification can't be finished now , since m too retarded to give it soo much time !   
+> This specification is still under maintaining any ideas please refer it to issue
 
-### General Directory of the project !   
-``` 
-simple_editor/
+### General Directory of the project !
+
+The project adopts the notion of workspaces where it will be more oragnized during development.
+
+   
+```
+Diwan
+├── Cargo.lock
 ├── Cargo.toml
-├── src
-│   ├── main.rs
-│   ├── commands
-│   │   ├── mod.rs
-│   │   ├── file_commands.rs
-│   │   ├── edit_commands.rs
-│   ├── editor
-│   │   ├── mod.rs
-│   │   ├── text_buffer.rs
-│   │   ├── renderer.rs
-│   ├── utils
-│   │   ├── mod.rs
-│   │   ├── file_manager.rs
-│   │   ├── syntax_highlighter.rs
-│   ├── lib.rs
-├── tests
-│   ├── integration_tests.rs
-│   ├── unit_tests.rs
+├── diwan-lib
+│   ├── Cargo.toml
+│   └── src
+│       ├── commands
+│       │   ├── edit_commands.rs
+│       │   ├── file_commands.rs
+│       │   └── mod.rs
+│       ├── debuger
+│       │   ├── mode_enum.rs
+│       │   ├── mod.rs
+│       │   └── statusbar_struct.rs
+│       ├── editor
+│       │   ├── editor.rs
+│       │   ├── mod.rs
+│       │   ├── renderer.rs
+│       │   └── text_buffer.rs
+│       ├── lib.rs
+│       ├── screen
+│       │   ├── keymap.rs
+│       │   ├── mainscreen.rs
+│       │   ├── mod.rs
+│       │   ├── statusbar.rs
+│       │   ├── ui.rs
+│       │   └── widget.rs
+│       └── utils
+│           ├── file_manager.rs
+│           ├── mod.rs
+│           └── syntax_highlighter.rs
+├── diwan-term
+│   ├── Cargo.toml
+│   └── src
+│       └── main.rs
+├── license
+└── README.md 
 ```
 
-## Explanation :   
+## Explanation
 
-- src/main.rs: The entrypoint of the application. This file should contain the main function and initialize the editor.
+- **diwan-lib/src/main.rs**: The entry point of the `diwan-term` application. This file contains the `main` function and initializes the terminal application.
+  
+- **diwan-lib/src/commands**: Contains modules related to commands:
+  - **mod.rs**: The module file that re-exports other command modules.
+  - **file_commands.rs**: Handles file-related commands (open, save, etc.).
+  - **edit_commands.rs**: Manages commands related to text editing (insert, delete, etc.).
 
-- src/commands: This directory contains modules related to commands.
-        - mod.rs: The module file that re-exports other command modules.
-        - file_commands.rs: Contains commands related to file operations (open, save, etc.).
-        - edit_commands.rs: Contains commands related to text editing (insert, delete, etc.).
+- **diwan-lib/src/debugger**: Contains modules for debugging:
+  - **mod.rs**: The module file that re-exports other debugger modules.
+  - **mode_enum.rs**: Defines different debugging modes.
+  - **statusbar_struct.rs**: Represents the structure of the status bar used for debugging.
 
-- src/editor: This directory contains the core components of the editor.
-        - mod.rs: The module file that re-exports other editor modules.
-        - text_buffer.rs: Manages the text content and cursor position.
-        - renderer.rs: Renders the text buffer to the terminal.
+- **diwan-lib/src/editor**: Contains the core components of the editor:
+  - **mod.rs**: The module file that re-exports other editor modules.
+  - **editor.rs**: Handles the main editor logic.
+  - **text_buffer.rs**: Manages the text buffer and cursor positioning.
+  - **renderer.rs**: Responsible for rendering the editor content to the terminal.
 
-- src/utils: This directory contains utility modules.
-        - mod.rs: The module file that re-exports other utility modules.
-        - file_manager.rs: Handles file operations.
-        - syntax_highlighter.rs: Applies syntax highlighting to the text buffer.
+- **diwan-lib/src/screen**: Manages screen-related components:
+  - **mod.rs**: The module file that re-exports other screen modules.
+  - **keymap.rs**: Manages key mappings for the screen.
+  - **mainscreen.rs**: Handles the main screen rendering.
+  - **statusbar.rs**: Manages the status bar at the bottom of the screen.
+  - **ui.rs**: Contains user interface logic for the editor.
+  - **widget.rs**: Defines UI widgets used within the editor.
 
-- src/lib.rs: This file can be used to define a library crate if needed. It can also contain common functionality shared across the project.
+- **diwan-lib/src/utils**: Contains utility modules:
+  - **mod.rs**: The module file that re-exports other utility modules.
+  - **file_manager.rs**: Handles file operations.
+  - **syntax_highlighter.rs**: Applies syntax highlighting to the text buffer.
 
-- tests: This directory contains test files.
-        - integration_tests.rs: Contains integration tests.
-        - unit_tests.rs: Contains unit tests.
+- **diwan-lib/src/lib.rs**: The main library file for the `diwan-lib` crate. It defines common functionality shared across the project.
+
+- **diwan-term/src/main.rs**: The entry point for the terminal application. This file contains the `main` function and sets up the terminal-based editor.
 
 ## General Taxonomy ! 
 
