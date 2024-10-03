@@ -1,6 +1,6 @@
 # Overview of Diwan
 
-**Diwan** is a Rust-based, Vim-like text editor designed to provide users with a seamless and efficient experience without placing a heavy load on computer resources.
+**Diwan** is a Rust-based editor designed to provide users with a seamless and efficient experience without placing a heavy load on computer resources.
 
 # Purpose and rationale behind choosing Rust
 
