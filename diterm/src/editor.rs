@@ -89,7 +89,15 @@ impl Editor {
                 }
 
                 match mode {
-                    Modes::Normal => Ok(None),
+                    Modes::Normal => match key.key {
+                        KeyCode::Char('d') => {
+                            self.delete_char();
+                            self.render_content(terminal)?;
+                            Ok(None)
+                        }
+
+                        _ => todo!(),
+                    },
                     Modes::Insert => match key.key {
                         KeyCode::Char(c) => {
                             self.insert_char(c);
@@ -210,9 +218,8 @@ impl Editor {
                     Actions::EnterMode(new_mode) => {
                         mode = new_mode;
                         match mode {
-                            Modes::Normal => {
-                                terminal.render(&[Change::CursorShape(CursorShape::Default)])?
-                            }
+                            Modes::Normal => terminal
+                                .render(&[Change::CursorShape(CursorShape::BlinkingBlock)])?,
                             Modes::Insert => {
                                 terminal.render(&[Change::CursorShape(CursorShape::BlinkingBar)])?
                             }
