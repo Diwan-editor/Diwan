@@ -5,7 +5,6 @@ use std::{
 
 use termwiz::{
     input::{InputEvent, KeyCode, KeyEvent},
-    surface::Change,
     terminal::{buffered::BufferedTerminal, Terminal},
     widgets::WidgetEvent,
     Error as KeymapError,
@@ -13,7 +12,7 @@ use termwiz::{
 
 use super::MainScreen;
 
-/// `keymap` for handling key mappings in Diwan editor.
+/// `keymap` for handling key mappings in the Diwan editor.
 pub struct Keymap;
 
 /// Represents the modes in which the editor can operate.
@@ -28,7 +27,7 @@ pub enum Modes {
 /// Defines the actions that can be performed in the editor.
 pub enum Actions {
     /// Exit the application.
-    Quit,
+    // Quit,
     /// Enter insert mode.
     EnterInsertMode,
     /// Enter normal mode.
@@ -64,7 +63,6 @@ impl Keymap {
         if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, .. })) = event {
             match mode {
                 Modes::Normal => match key {
-                    KeyCode::Char('q') => Some(Actions::Quit),
                     KeyCode::Char('h') | KeyCode::LeftArrow => Some(Actions::MoveLeft),
                     KeyCode::Char('j') | KeyCode::DownArrow => Some(Actions::MoveDown),
                     KeyCode::Char('k') | KeyCode::UpArrow => Some(Actions::MoveUp),
@@ -109,7 +107,6 @@ impl Keymap {
         let lines: Vec<&str> = content_guard.lines().collect();
 
         match action {
-            Actions::Quit => std::process::exit(0),
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::MoveLeft => Self::move_cursor_left(cursor_x, cursor_y, &lines),
@@ -121,7 +118,6 @@ impl Keymap {
             Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content_guard),
         }
     }
-
     /// Inserts a character at the cursor position.
     fn insert_char(c: char, cursor_x: &mut usize, cursor_y: &mut usize, content: &mut String) {
         let lines: Vec<&str> = content.lines().collect();
@@ -164,7 +160,7 @@ impl Keymap {
     fn move_cursor_up(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
         if *cursor_y > 0 {
             *cursor_y -= 1;
-            *cursor_x = *cursor_x.min(&mut lines[*cursor_y].len());
+            *cursor_x = (*cursor_x).min(lines[*cursor_y].len());
         }
     }
 
@@ -172,7 +168,7 @@ impl Keymap {
     fn move_cursor_down(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
         if *cursor_y < lines.len() - 1 {
             *cursor_y += 1;
-            *cursor_x = *cursor_x.min(&mut lines[*cursor_y].len());
+            *cursor_x = (*cursor_x).min(lines[*cursor_y].len());
         }
     }
 
@@ -198,7 +194,7 @@ impl Keymap {
 
     /// Returns the byte position in the content string based on the current cursor position.
     fn get_byte_position(lines: &[&str], cursor_pos: (usize, usize)) -> usize {
-        let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum();
+        let line_start: usize = lines[..cursor_pos.1].iter().map(|l| l.len() + 1).sum(); // Sum of lengths of lines before the current line
         line_start + cursor_pos.0
     }
 

@@ -1,5 +1,4 @@
 use std::sync::{Arc, Mutex};
-
 use termwiz::caps::Capabilities;
 use termwiz::input::*;
 use termwiz::surface::{Change, Position};
@@ -11,17 +10,17 @@ use termwiz::Error;
 use super::keymap::Modes;
 use super::{Keymap, SendableUi, StatusBar};
 
-/// The `MainScreen` is a struct that deals with rendering the main screen of the Diwan editor.
+/// The `MainScreen` struct deals with rendering the main screen of the Diwan editor.
 pub struct MainScreen {
-    /// Holds the input text that we wish the widget to display.
+    /// Shared text content
     pub text: Arc<Mutex<String>>,
-    /// Modes to let the user know what mode they are in.
+    /// Modes (Normal, Insert, etc.)
     pub mode: Modes,
-    /// cursor position x
+    /// X position of the cursor
     pub cursor_x: usize,
-    /// cursor position y
+    /// Y position of the cursor
     pub cursor_y: usize,
-    /// status bar that feeds the user with necessary information (mode, filename, cursor xy, etc.).
+    /// Status bar displaying mode, etc.
     pub status_bar: StatusBar,
 }
 
@@ -82,7 +81,6 @@ impl MainScreen {
             },
         ))
     }
-
     /// Sets up the UI for the main screen by creating and configuring the root widget.
     ///
     /// This function initializes a new `Ui` instance, sets the current `MainScreen`
@@ -97,7 +95,7 @@ impl MainScreen {
     /// let main_screen = MainScreen::new();
     /// let ui = main_screen.setup_ui();
     /// ```
-    /// This will set the `MainScreen` as the root widget and prepare the UI for rendering.
+    /// This will set the `MainScreen` as the root widget and prepare the UI for rendering
     pub fn setup_ui(self) -> SendableUi<'static> {
         let mut ui = Ui::new();
         ui.set_root(self);
@@ -115,28 +113,36 @@ impl MainScreen {
         ui: &mut SendableUi,
     ) -> Result<(), Error> {
         loop {
+            // Process any queued UI events (if present)
             ui.process_event_queue()?;
 
+            // Render the updated UI to the screen
             if ui.render_to_screen(buf)? {
+                buf.flush()?; // Ensure that the terminal is flushed after rendering
                 continue;
             }
+
+            // Flush the terminal buffer after every loop iteration to prevent delays
             buf.flush()?;
 
+            // Handle user input (polling for key presses)
             match buf.terminal().poll_input(None) {
-                Ok(Some(InputEvent::Resized { rows, cols })) => {
-                    buf.add_change(Change::ClearScreen(Default::default()));
-                    buf.resize(cols, rows);
-                }
                 Ok(Some(input)) => match input {
+                    // Quit on Alt+Q
                     InputEvent::Key(KeyEvent {
                         key: KeyCode::Char('q'),
                         modifiers: Modifiers::ALT,
                     }) => {
-                        Keymap::close_terminal(buf).unwrap();
+                        Self::quit_application(buf);
                         break;
                     }
-                    input => {
-                        ui.queue_event(WidgetEvent::Input(input));
+                    InputEvent::Resized { rows, cols } => {
+                        buf.add_change(Change::ClearScreen(Default::default()));
+                        buf.resize(cols, rows);
+                    }
+                    // Other inputs are queued as widget events
+                    other_input => {
+                        ui.queue_event(WidgetEvent::Input(other_input));
                     }
                 },
                 Ok(None) => {}
@@ -148,7 +154,10 @@ impl MainScreen {
         }
         Ok(())
     }
+    /// func that exit the terminal gracefully
+    fn quit_application(buffer: &mut BufferedTerminal<impl Terminal>) {
+        if let Err(e) = Keymap::close_terminal(buffer) {
+            eprintln!("Failed to close terminal gracefully: {}", e);
+        }
+    }
 }
-
-unsafe impl Send for MainScreen {}
-unsafe impl Sync for MainScreen {}

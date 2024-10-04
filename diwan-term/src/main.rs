@@ -19,6 +19,8 @@ struct DiwanArgs {
     man: bool,
 }
 
+// TODO: when closing terminal use the drop method implemnet it within the mainscreen
+// TODO: deal with the main even loop in proper way
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let arg = DiwanArgs::parse();
