@@ -75,49 +75,63 @@ impl StatusBar {
     /// This function adds changes to the surface to display the status bar with the current mode,
     /// filename, and cursor position.
     pub fn render(&mut self, args: &mut RenderArgs, cursor_x: usize, cursor_y: usize) {
-        let dims = args.surface.dimensions();
+        const PADDING: usize = 2;
+        const MIN_CONTENT_WIDTH: usize = 40;
+        const STATUS_BAR_OFFSET: usize = 2;
+        const GRUVBOX_SOFT_BACKGROUND: (u8, u8, u8) = (50, 48, 47);
+        const WHITE: (u8, u8, u8) = (251, 241, 194);
 
-        // Ensure that we don't subtract below 0 (which would cause overflow)
-        let min_width = 40; // Minimum width for the status text layout
-        let width_for_center = if dims.0 > min_width {
-            dims.0 - min_width
-        } else {
-            // If terminal width is too small, set to 0 to prevent negative width
-            0
-        };
+        let (width, height) = args.surface.dimensions();
+        let available_width = width.saturating_sub(2 * PADDING);
 
-        // Create the string that shows the cursor position (e.g., "Ln 3, Col 5")
-        let cursor_pos_text = format!("{}:{}", cursor_x + 1, cursor_y + 1); // Convert to 1-based indexing
+        let width_for_center = available_width.saturating_sub(MIN_CONTENT_WIDTH);
+
         let status_text = format!(
             "{:<20}{:^width$}{:>20}",
-            self.status_mode.to_uppercase(), // FIXME(In future): the uppercase is not applicable regardles the impl of fmt::Display of Modes enum
+            self.status_mode.to_uppercase(),
             self.filename,
-            cursor_pos_text,
+            format!("{}:{}", cursor_x + 1, cursor_y + 1),
             width = width_for_center
         );
 
-        args.surface.add_change(Change::CursorPosition {
-            x: Position::Relative(0),
-            y: Position::Relative((dims.1 - 1) as isize), // Position at the last row
-        });
+        let status_bar_y = height.saturating_sub(STATUS_BAR_OFFSET);
 
-        // White text on a dark background for the status bar
-        args.surface
-            .add_change(Change::Attribute(AttributeChange::Foreground(
+        // Prepare all changes in a vector
+        let mut changes = vec![
+            Change::CursorPosition {
+                x: Position::Absolute(0),
+                y: Position::Absolute(status_bar_y),
+            },
+            Change::Attribute(AttributeChange::Foreground(
                 ColorAttribute::TrueColorWithPaletteFallback(
-                    (0xFF, 0xFF, 0xFF).into(),
+                    (WHITE).into(),
                     AnsiColor::White.into(),
                 ),
-            )));
-        args.surface
-            .add_change(Change::Attribute(AttributeChange::Background(
+            )),
+            Change::Attribute(AttributeChange::Background(
                 ColorAttribute::TrueColorWithPaletteFallback(
-                    (0x28, 0x28, 0x28).into(),
+                    (GRUVBOX_SOFT_BACKGROUND).into(),
                     AnsiColor::Maroon.into(),
                 ),
-            )));
+            )),
+            Change::Text(" ".repeat(PADDING)),
+            Change::Text(status_text),
+            Change::Text(" ".repeat(PADDING)),
+        ];
 
-        // Render the status text with mode, filename, and cursor position
-        args.surface.add_change(Change::Text(status_text));
+        // Fill the rest of the line if necessary
+        // if available_width > status_text.len() {
+        //     let remaining_space = available_width.saturating_sub(status_text.len());
+        //     changes.push(Change::Text(" ".repeat(remaining_space)));
+        // }
+
+        // Clear the line below the status bar
+        changes.extend_from_slice(&[Change::CursorPosition {
+            x: Position::Absolute(0),
+            y: Position::Relative(1),
+        }]);
+
+        // Apply all changes at once
+        args.surface.add_changes(changes);
     }
 }

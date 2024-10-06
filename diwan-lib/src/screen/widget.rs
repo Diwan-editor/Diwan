@@ -26,11 +26,13 @@ impl Widget for MainScreen {
     fn render(&mut self, args: &mut RenderArgs) {
         let text_guarded = self.text.lock().unwrap(); // Lock the content only briefly to access it
         let (width, height) = args.surface.dimensions();
+        const GRV_COLOR_BACK: (u8, u8, u8) = (29, 32, 33);
+        const WHITE: (u8, u8, u8) = (251, 241, 194);
 
         // Clear the screen with Gruvbox dark background color
         args.surface.add_change(Change::ClearScreen(
             ColorAttribute::TrueColorWithPaletteFallback(
-                (0x1d, 0x20, 0x21).into(),
+                (GRV_COLOR_BACK).into(),
                 AnsiColor::Black.into(),
             ),
         ));
@@ -56,13 +58,19 @@ impl Widget for MainScreen {
             y: Position::Absolute(self.cursor_y),
         });
 
+        // FIXME: keep writing until you reach at end of line while creating new one
+        //the cursor shape is dispeared
         // Set the cursor shape based on the current mode
         *args.cursor = CursorShapeAndPosition {
             coords: ParentRelativeCoords::new(self.cursor_x, self.cursor_y),
             shape: match self.mode {
                 Modes::Normal => termwiz::surface::CursorShape::BlinkingBlock,
-                Modes::Insert => termwiz::surface::CursorShape::BlinkingBar,
+                Modes::Insert => termwiz::surface::CursorShape::Default,
             },
+            color: ColorAttribute::TrueColorWithPaletteFallback(
+                (WHITE).into(),
+                AnsiColor::White.into(),
+            ),
             ..Default::default()
         };
     }
