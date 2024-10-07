@@ -1,7 +1,7 @@
 use crate::screen::MainScreen;
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
-use termwiz::surface::{Change, Position, Surface};
+use termwiz::surface::{self, Change, Position, Surface};
 use termwiz::widgets::*;
 
 use super::{Keymap, Modes, StatusBar};
@@ -19,6 +19,7 @@ impl Widget for MainScreen {
             );
             self.status_bar.update(&self.mode);
         }
+
         true // Always return true to indicate the UI should re-render
     }
 
@@ -28,6 +29,7 @@ impl Widget for MainScreen {
         let (width, height) = args.surface.dimensions();
         const GRV_COLOR_BACK: (u8, u8, u8) = (29, 32, 33);
         const WHITE: (u8, u8, u8) = (251, 241, 194);
+        const YELLOW_NUMBER_LINES: (u8, u8, u8) = (0xFA, 0xBD, 0x2F); // #FABD2F
 
         // Clear the screen with Gruvbox dark background color
         args.surface.add_change(Change::ClearScreen(
@@ -37,6 +39,41 @@ impl Widget for MainScreen {
             ),
         ));
 
+        // Calculate the width required for line numbers
+        let line_number_width = (height as f64).log10().ceil() as usize + 1;
+
+        // Render the line numbers
+        for y in 0..height {
+            // warp up the widgets
+            let number_of_lines_widget = vec![
+                Change::CursorPosition {
+                    x: Position::Absolute(0),
+                    y: Position::Absolute(y),
+                },
+                // color the number of lines
+                Change::Attribute(AttributeChange::Foreground(
+                    ColorAttribute::TrueColorWithPaletteFallback(
+                        (YELLOW_NUMBER_LINES).into(),
+                        AnsiColor::White.into(),
+                    ),
+                )),
+                // render the numbers
+                Change::Text(format!("{:width$} ", y + 1, width = line_number_width)),
+                // reset the color
+                Change::Attribute(AttributeChange::Foreground(
+                    ColorAttribute::TrueColorWithPaletteFallback(
+                        (WHITE).into(),
+                        AnsiColor::White.into(),
+                    ),
+                )),
+            ];
+
+            // render the number of lines
+            for change in number_of_lines_widget {
+                args.surface.add_change(change);
+            }
+        }
+
         // Render the text content
         let lines: Vec<&str> = text_guarded.lines().collect();
         for (y, line) in lines.iter().enumerate() {
@@ -44,28 +81,27 @@ impl Widget for MainScreen {
                 break; // Avoid rendering past screen dimensions
             }
             args.surface.add_change(Change::CursorPosition {
-                x: Position::Absolute(0),
+                x: Position::Absolute(line_number_width + 1),
                 y: Position::Absolute(y),
             });
             args.surface.add_change(format!("{}\r\n", line));
         }
+
         // Render the status bar (mode, cursor position, etc.)
         self.status_bar.render(args, self.cursor_x, self.cursor_y);
 
         // Position the cursor based on its current coordinates
         args.surface.add_change(Change::CursorPosition {
-            x: Position::Absolute(self.cursor_x),
+            x: Position::Absolute(self.cursor_x + line_number_width + 1),
             y: Position::Absolute(self.cursor_y),
         });
 
-        // FIXME: keep writing until you reach at end of line while creating new one
-        //the cursor shape is dispeared
         // Set the cursor shape based on the current mode
         *args.cursor = CursorShapeAndPosition {
-            coords: ParentRelativeCoords::new(self.cursor_x, self.cursor_y),
+            coords: ParentRelativeCoords::new(self.cursor_x + line_number_width + 1, self.cursor_y),
             shape: match self.mode {
                 Modes::Normal => termwiz::surface::CursorShape::BlinkingBlock,
-                Modes::Insert => termwiz::surface::CursorShape::Default,
+                Modes::Insert => termwiz::surface::CursorShape::BlinkingBar,
             },
             color: ColorAttribute::TrueColorWithPaletteFallback(
                 (WHITE).into(),

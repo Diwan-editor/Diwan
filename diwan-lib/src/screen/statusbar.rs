@@ -90,7 +90,7 @@ impl StatusBar {
             "{:<20}{:^width$}{:>20}",
             self.status_mode.to_uppercase(),
             self.filename,
-            format!("{}:{}", cursor_x + 1, cursor_y + 1),
+            format!("{}:{}", cursor_y + 1, cursor_x + 1),
             width = width_for_center
         );
 
