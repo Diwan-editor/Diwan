@@ -40,10 +40,10 @@ impl StatusBar {
     /// ```
     /// let status_bar = StatusBar::new("dummy.rs", "NORMAL");
     /// ```
-    pub fn new(filename: &str, status_mode: &str) -> Self {
+    pub fn new() -> Self {
         Self {
-            status_mode: status_mode.to_string(),
-            filename: filename.to_string(),
+            status_mode: Default::default(),
+            filename: Default::default(),
         }
     }
     /// Updates the `status_mode` of the `StatusBar` based on the current mode.

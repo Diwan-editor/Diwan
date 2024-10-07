@@ -69,7 +69,7 @@ impl MainScreen {
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
-        let status_bar = StatusBar::new("main.rs", "NORMAL");
+        let status_bar = StatusBar::default();
         Ok((
             buffer,
             Self {
