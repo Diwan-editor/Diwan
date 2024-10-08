@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::screen::MainScreen;
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
@@ -24,6 +26,7 @@ impl Widget for MainScreen {
     }
 
     /// Render the screen content, including text and the status bar
+    // NOTE: the rendering of the line of numbers are multiplied idk why?
     fn render(&mut self, args: &mut RenderArgs) {
         let text_guarded = self.text.lock().unwrap(); // Lock the content only briefly to access it
         let (width, height) = args.surface.dimensions();
@@ -41,9 +44,19 @@ impl Widget for MainScreen {
 
         // Calculate the width required for line numbers
         let line_number_width = (height as f64).log10().ceil() as usize + 1;
+        // Determine how many lines of text we have
+        let total_lines = text_guarded.lines().count();
+        let effective_lines = if total_lines > 0 { total_lines } else { 1 };
 
+        let content_height = height.saturating_sub(1);
         // Render the line numbers
-        for y in 0..height {
+        for y in 0..content_height {
+            let line_text = match y.cmp(&effective_lines) {
+                Ordering::Less => format!("{:width$} ", y + 1, width = line_number_width),
+                Ordering::Equal => "~".to_string(),
+                Ordering::Greater => "~".to_string(),
+            };
+
             // warp up the widgets
             let number_of_lines_widget = vec![
                 Change::CursorPosition {
@@ -58,7 +71,7 @@ impl Widget for MainScreen {
                     ),
                 )),
                 // render the numbers
-                Change::Text(format!("{:width$} ", y + 1, width = line_number_width)),
+                Change::Text(line_text),
                 // reset the color
                 Change::Attribute(AttributeChange::Foreground(
                     ColorAttribute::TrueColorWithPaletteFallback(
@@ -72,20 +85,22 @@ impl Widget for MainScreen {
             for change in number_of_lines_widget {
                 args.surface.add_change(change);
             }
+            // Render the text
+            if y < total_lines {
+                let line = text_guarded.lines().nth(y).unwrap_or("");
+                args.surface.add_change(Change::CursorPosition {
+                    x: Position::Absolute(line_number_width + 1),
+                    y: Position::Absolute(y),
+                });
+                args.surface.add_change(format!("{}\r\n", line));
+            }
         }
 
         // Render the text content
-        let lines: Vec<&str> = text_guarded.lines().collect();
-        for (y, line) in lines.iter().enumerate() {
-            if y >= height {
-                break; // Avoid rendering past screen dimensions
-            }
-            args.surface.add_change(Change::CursorPosition {
-                x: Position::Absolute(line_number_width + 1),
-                y: Position::Absolute(y),
-            });
-            args.surface.add_change(format!("{}\r\n", line));
-        }
+        args.surface.add_change(Change::CursorPosition {
+            x: Position::Absolute(0),
+            y: Position::Absolute(content_height), // One line above the status bar
+        });
 
         // Render the status bar (mode, cursor position, etc.)
         self.status_bar.render(args, self.cursor_x, self.cursor_y);

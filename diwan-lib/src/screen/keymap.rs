@@ -107,15 +107,15 @@ impl Keymap {
         let lines: Vec<&str> = content_guard.lines().collect();
 
         match action {
-            Actions::EnterInsertMode => *mode = Modes::Insert,
-            Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::MoveLeft => Self::move_cursor_left(cursor_x, cursor_y, &lines),
             Actions::MoveRight => Self::move_cursor_right(cursor_x, cursor_y, &lines),
             Actions::MoveUp => Self::move_cursor_up(cursor_x, cursor_y, &lines),
             Actions::MoveDown => Self::move_cursor_down(cursor_x, cursor_y, &lines),
+            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content_guard),
+            Actions::EnterInsertMode => *mode = Modes::Insert,
+            Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
             Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
-            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content_guard),
         }
     }
     /// Inserts a character at the cursor position.
@@ -123,6 +123,13 @@ impl Keymap {
         let lines: Vec<&str> = content.lines().collect();
         let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
 
+        // If the current line starts with a `~`, remove it before inserting the character
+        // if lines[*cursor_y].trim() == "~" {
+        //     let line_start = Self::get_byte_position(&lines, (0, *cursor_y));
+        //     content.replace_range(line_start..line_start + 1, "EOF");
+        // }
+
+        // Insert the new character
         content.insert(byte_pos, c);
         *cursor_x += 1;
     }
@@ -135,6 +142,7 @@ impl Keymap {
         content.insert(byte_pos, '\n');
         *cursor_x = 0;
         *cursor_y += 1;
+        content.insert(byte_pos, '\n');
     }
 
     /// Deletes a character before the cursor.

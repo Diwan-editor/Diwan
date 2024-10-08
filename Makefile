@@ -9,18 +9,19 @@ RC = cargo
 RP = run
 BP = build --release
 CP = clean
-
+LT = clippy
 run:
 	@printf "${MAGENTA}Running the program...${NC}\n"
 	@echo ""
-	@sleep 2
 	@$(RC) $(RP)
 	
 build:
 	@printf "${MAGENTA}Building the program...${NC}\n"
 	@$(RC) $(BP)
 	@sudo cp target/release/$(PROGRAM) /usr/bin
-
+lint:
+	@printf "${MAGENTA}Running the program...${NC}\n"
+	@$(RC) ${LT}
 clean:
 	@printf "${MAGENTA}Cleaning the program...${NC}\n"
 	@$(RC) $(CP)
