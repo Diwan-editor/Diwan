@@ -22,6 +22,8 @@ pub struct MainScreen {
     pub cursor_y: usize,
     /// Status bar displaying mode, etc.
     pub status_bar: StatusBar,
+    /// History
+    pub yank: Vec<String>
 }
 
 impl MainScreen {
@@ -77,6 +79,7 @@ impl MainScreen {
                 mode: Modes::Normal,
                 cursor_x: 0,
                 cursor_y: 0,
+                yank: vec![],
                 status_bar,
             },
         ))
@@ -133,7 +136,7 @@ impl MainScreen {
                         key: KeyCode::Char('q'),
                         modifiers: Modifiers::ALT,
                     }) => {
-                        Self::quit_application(buf);
+                        Self::quit_application(buf); // to check what is this ?
                         break;
                     }
                     InputEvent::Resized { rows, cols } => {

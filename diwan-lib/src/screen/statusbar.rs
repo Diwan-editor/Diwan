@@ -94,7 +94,8 @@ impl StatusBar {
             width = width_for_center
         );
 
-        let status_bar_y = height.saturating_sub(STATUS_BAR_OFFSET);
+        // let status_bar_y =  height.overflowing_sub (STATUS_BAR_OFFSET);
+        let (status_bar_y, _) =  height.overflowing_sub (STATUS_BAR_OFFSET);
 
         // Prepare all changes in a vector
         let mut changes = vec![

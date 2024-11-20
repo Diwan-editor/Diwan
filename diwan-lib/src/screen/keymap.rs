@@ -46,6 +46,8 @@ pub enum Actions {
     DeleteChar,
     /// Insert a newline character.
     NewLine,
+    /// Paste a string from the clipboard
+    Paste(String)
 }
 
 impl Keymap {
@@ -82,6 +84,9 @@ impl Keymap {
                     _ => None,
                 },
             }
+
+        } else if let WidgetEvent::Input(InputEvent::Paste(pasted_string)) = event {
+            Some(Actions::Paste(pasted_string.to_owned()))
         } else {
             None
         }
@@ -115,6 +120,7 @@ impl Keymap {
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
+            Actions::Paste(pasted_string) => Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard ),
             Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
         }
     }
@@ -219,5 +225,15 @@ impl Keymap {
         buffer.terminal().exit_alternate_screen()?;
         buffer.terminal().flush()?;
         Ok(())
+    }
+
+    fn insert_string(pasted_string: String, cursor_x: &mut usize, cursor_y: &mut usize, content: &mut std::sync::MutexGuard<'_, String>) {
+        let lines: Vec<&str> = content.lines().collect();
+        let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
+
+
+        // Insert the new character
+        content.insert_str(byte_pos, pasted_string.as_str());
+        *cursor_x += pasted_string.len();
     }
 }
