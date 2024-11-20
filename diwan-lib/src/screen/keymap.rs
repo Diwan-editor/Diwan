@@ -17,6 +17,7 @@ pub struct Keymap;
 
 /// Represents the modes in which the editor can operate.
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub enum Modes {
     /// The normal mode for navigation.
     Normal,
@@ -147,8 +148,7 @@ impl Keymap {
 
         content.insert(byte_pos, '\n');
         *cursor_x = 0;
-        *cursor_y += 1;
-        content.insert(byte_pos, '\n');
+        *cursor_y += 1; // TODO: how character is bein added !
     }
 
     /// Deletes a character before the cursor.
