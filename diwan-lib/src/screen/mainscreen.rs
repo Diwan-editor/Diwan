@@ -23,7 +23,7 @@ pub struct MainScreen {
     /// Status bar displaying mode, etc.
     pub status_bar: StatusBar,
     /// History
-    pub yank: Vec<String>
+    pub yank: Vec<String>,
 }
 
 impl MainScreen {

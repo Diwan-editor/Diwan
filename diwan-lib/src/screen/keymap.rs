@@ -16,8 +16,7 @@ use super::MainScreen;
 pub struct Keymap;
 
 /// Represents the modes in which the editor can operate.
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Modes {
     /// The normal mode for navigation.
     Normal,
@@ -48,7 +47,7 @@ pub enum Actions {
     /// Insert a newline character.
     NewLine,
     /// Paste a string from the clipboard
-    Paste(String)
+    Paste(String),
 }
 
 impl Keymap {
@@ -85,7 +84,6 @@ impl Keymap {
                     _ => None,
                 },
             }
-
         } else if let WidgetEvent::Input(InputEvent::Paste(pasted_string)) = event {
             Some(Actions::Paste(pasted_string.to_owned()))
         } else {
@@ -121,7 +119,9 @@ impl Keymap {
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
-            Actions::Paste(pasted_string) => Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard ),
+            Actions::Paste(pasted_string) => {
+                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard)
+            }
             Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
         }
     }
@@ -227,10 +227,14 @@ impl Keymap {
         Ok(())
     }
 
-    fn insert_string(pasted_string: String, cursor_x: &mut usize, cursor_y: &mut usize, content: &mut std::sync::MutexGuard<'_, String>) {
+    fn insert_string(
+        pasted_string: String,
+        cursor_x: &mut usize,
+        cursor_y: &mut usize,
+        content: &mut std::sync::MutexGuard<'_, String>,
+    ) {
         let lines: Vec<&str> = content.lines().collect();
         let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
-
 
         // Insert the new character
         content.insert_str(byte_pos, pasted_string.as_str());
