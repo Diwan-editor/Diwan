@@ -180,9 +180,11 @@ impl Keymap {
 
     /// Moves the cursor down.
     fn move_cursor_down(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
-        if *cursor_y < lines.len() - 1 {
-            *cursor_y += 1;
-            *cursor_x = (*cursor_x).min(lines[*cursor_y].len());
+        if let (Some(current_line), _) = (lines.get(*cursor_y), lines.get(*cursor_y + 1)) {
+            if *cursor_y < lines.len() - 1 {
+                *cursor_y += 1;
+                *cursor_x = (*cursor_x).min(lines[*cursor_y].len());
+            }
         }
     }
 
@@ -198,11 +200,13 @@ impl Keymap {
 
     /// Moves the cursor right.
     fn move_cursor_right(cursor_x: &mut usize, cursor_y: &mut usize, lines: &[&str]) {
-        if *cursor_x < lines[*cursor_y].len() {
-            *cursor_x += 1;
-        } else if *cursor_y < lines.len() - 1 {
-            *cursor_y += 1;
-            *cursor_x = 0;
+        if let (Some(current_line), _) = (lines.get(*cursor_y), lines.get(*cursor_y + 1)) {
+            if *cursor_x < lines[*cursor_y].len() {
+                *cursor_x += 1;
+            } else if *cursor_y < lines.len() - 1 {
+                *cursor_y += 1;
+                *cursor_x = 0;
+            }
         }
     }
 
