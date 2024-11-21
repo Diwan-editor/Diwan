@@ -106,7 +106,7 @@ impl Keymap {
         cursor_x: &mut usize,
         cursor_y: &mut usize,
         mode: &mut Modes,
-        yank: Arc<Mutex<Vec<String>>>
+        yank: Arc<Mutex<Vec<String>>>,
     ) {
         let mut content_guard = content.lock().unwrap();
         let lines: Vec<&str> = content_guard.lines().collect();
@@ -120,11 +120,10 @@ impl Keymap {
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
             Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
-            Actions::Paste(pasted_string) =>
-            {
+            Actions::Paste(pasted_string) => {
                 Self::persists_string_in_yank(&pasted_string, yank);
-                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard )
-            },
+                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard)
+            }
             Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
         }
     }
@@ -248,7 +247,7 @@ impl Keymap {
         *cursor_x += pasted_string.len();
     }
 
-    fn persists_string_in_yank(pasted_string: &String, yank: Arc<Mutex<Vec<String>>> ) {
+    fn persists_string_in_yank(pasted_string: &String, yank: Arc<Mutex<Vec<String>>>) {
         yank.lock().unwrap().push(pasted_string.to_owned());
     }
 }

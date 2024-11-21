@@ -3,12 +3,13 @@ use clap::{
     builder::{styling::AnsiColor, Styles},
     Parser,
 };
-use diwan::screen::MainScreen;
+use diwan::{broker::Broker, screen::MainScreen};
 use std::{
     process::exit,
     sync::{Arc, Mutex},
 };
 use tokio::task;
+use diwan::loging::loging::Logger;
 
 /// diwan is a rust based text editor that is fast and secure.
 #[derive(Parser, Debug)]
@@ -19,8 +20,6 @@ struct DiwanArgs {
     man: bool,
 }
 
-// TODO: when closing terminal use the drop method implemnet it within the mainscreen
-// TODO: deal with the main even loop in proper way
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let arg = DiwanArgs::parse();
@@ -49,6 +48,12 @@ async fn main() -> Result<(), Error> {
             MainScreen::main_event_loop(&mut buffer, &mut ui).unwrap();
         })
         .await;
+
+        let logger_handler = task::spawn(async move {
+            let mut logger = Logger::setup_login().unwrap();
+
+            logger.write_logs("example log", diwan::loging::loging::Criticality::Normal)
+        }).await;
         // // Second UI
         // let dnbuffer2 = MainScreen::new_buffered_term()?;
         // let typed_text2 = Arc::new(Mutex::new(String::new()));
