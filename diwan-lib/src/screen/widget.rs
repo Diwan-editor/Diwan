@@ -18,6 +18,7 @@ impl Widget for MainScreen {
                 &mut self.cursor_x,
                 &mut self.cursor_y,
                 &mut self.mode,
+                self.yank.clone()
             );
             self.status_bar.update(&self.mode);
         }

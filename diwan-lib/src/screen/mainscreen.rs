@@ -23,7 +23,7 @@ pub struct MainScreen {
     /// Status bar displaying mode, etc.
     pub status_bar: StatusBar,
     /// History
-    pub yank: Vec<String>,
+    pub yank: Arc<Mutex<Vec<String>>>
 }
 
 impl MainScreen {
@@ -79,7 +79,7 @@ impl MainScreen {
                 mode: Modes::Normal,
                 cursor_x: 0,
                 cursor_y: 0,
-                yank: vec![],
+                yank: Arc::new(Mutex::new(vec![])),
                 status_bar,
             },
         ))
@@ -143,12 +143,16 @@ impl MainScreen {
                         buf.add_change(Change::ClearScreen(Default::default()));
                         buf.resize(cols, rows);
                     }
+                    InputEvent::Mouse(MouseEvent { x, y, mouse_buttons, modifiers }) => {
+                        continue;
+                    }
                     // Other inputs are queued as widget events
                     other_input => {
                         ui.queue_event(WidgetEvent::Input(other_input));
                     }
                 },
-                Ok(None) => {}
+                Ok(None) => {
+                }
                 Err(e) => {
                     println!("{:?}\r\n", e);
                     break;
@@ -159,6 +163,7 @@ impl MainScreen {
     }
     /// func that exit the terminal gracefully
     fn quit_application(buffer: &mut BufferedTerminal<impl Terminal>) {
+
         if let Err(e) = Keymap::close_terminal(buffer) {
             eprintln!("Failed to close terminal gracefully: {}", e);
         }
