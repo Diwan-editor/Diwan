@@ -1,7 +1,12 @@
 [package]
 name = "diwan-term"
-version = "0.1.0"
-edition = "2021"
+description.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+readme.workspace = true
+repository.workspace = true
+
 
 [dependencies]
 diwan = { path = "../diwan-lib", package = "diwan-lib" } # the real name of package called diwan-lib but to avoid the "-" i used diwan

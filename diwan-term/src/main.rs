@@ -3,21 +3,25 @@ use clap::{
     builder::{styling::AnsiColor, Styles},
     Parser,
 };
-use diwan::{broker::Broker, screen::MainScreen};
+use diwan::logs::{DiwanLevelLog, DiwanLogger};
+use diwan::screen::MainScreen;
 use std::{
     process::exit,
     sync::{Arc, Mutex},
 };
 use tokio::task;
-use diwan::loging::loging::Logger;
 
 /// diwan is a rust based text editor that is fast and secure.
 #[derive(Parser, Debug)]
-#[command(version = "1.0.0", about, long_about, styles = handle_cli_help_color())]
+#[command(version = env!("CARGO_PKG_VERSION"), author = env!("CARGO_PKG_AUTHORS"), about = env!("CARGO_PKG_DESCRIPTION"),styles = handle_cli_help_color())]
 struct DiwanArgs {
     /// load the user manual
     #[arg(short, long)]
     man: bool,
+
+    /// test log
+    #[arg(short, long)]
+    log: bool,
 }
 
 #[tokio::main]
@@ -26,6 +30,17 @@ async fn main() -> Result<(), Error> {
 
     if arg.man {
         println!("Loading the manual");
+    } else if arg.log {
+        let diwan_logger = DiwanLogger::new(DiwanLevelLog::Debug)?;
+        diwan_logger.setup_dn_logger()?;
+
+        diwan_logger.write_to_dn_log(DiwanLevelLog::Critical, "Sorry daddy I made an error!");
+        diwan_logger.write_to_dn_log(DiwanLevelLog::Debug, "Oh yeah debug me daddy!");
+        diwan_logger.write_to_dn_log(DiwanLevelLog::Info, "Daddy inform me if you reached home!");
+        diwan_logger.write_to_dn_log(
+            DiwanLevelLog::Warn,
+            "Daddy don't be bad boy! I will tell mommy",
+        );
     } else {
         // init the a new buffered terminal
         let dnbuffer = MainScreen::new_buffered_term()?;
@@ -49,11 +64,12 @@ async fn main() -> Result<(), Error> {
         })
         .await;
 
-        let logger_handler = task::spawn(async move {
-            let mut logger = Logger::setup_login().unwrap();
+        // let logger_handler = task::spawn(async move {
+        //     let mut logger = Logger::setup_login().unwrap();
 
-            logger.write_logs("example log", diwan::loging::loging::Criticality::Normal)
-        }).await;
+        //     logger.write_logs("example log", diwan::loging::loging::Criticality::Normal)
+        // })
+        // .await;
         // // Second UI
         // let dnbuffer2 = MainScreen::new_buffered_term()?;
         // let typed_text2 = Arc::new(Mutex::new(String::new()));

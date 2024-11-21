@@ -12,5 +12,7 @@ fnv = { version = "1.0.7", optional = true }
 log = "0.4.22"
 ropey = "1.6.1"
 signal-hook = "0.3.17"
+simplelog = "0.12.2"
 termwiz = { version = "0.22.0", features = ["widgets"] }
+time = "0.3.36"
 tokio = { version = "1", features = ["full"] }

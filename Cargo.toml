@@ -20,6 +20,7 @@ version = "1.0.0"
 edition = "2021"
 authors = ["Tarik", "Makarov", "Abdogouhmad"]
 categories = ["editor"]
+description = "A unique rust editor"
 repository = "https://github.com/Diwan-editor/Diwan"
 homepage = "https://github.com/Diwan-editor/Diwan"
 license = "MPL-2.0"
