@@ -155,7 +155,6 @@ impl MainScreen {
                     other_input => {
                         ui.queue_event(WidgetEvent::Input(other_input));
                     }
-
                 },
                 Ok(None) => {}
                 Err(e) => {

@@ -18,27 +18,28 @@ pub struct DiwanLogger {
 
 #[derive(Debug)]
 pub enum DiwanLevelLog {
-    All,
     Debug,
     Info,
     Warn,
     Critical,
 }
-
+// TODO: write docs here
+// TODO: add a bunch of cfgs to check if the log flag is activated , maybe diwan can be run in some low
+// privilege that wont let it create log files !
+/// This is a damn doc (dummy)
 impl DiwanLogger {
-    /// Create a new `DiwanLogger` instance
     pub fn new(levellog: DiwanLevelLog) -> Result<Self, Error> {
-        // Retrieve the HOME directory
+        // TODO : to remove this , home_dir can be infered from the pwd
         let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
         let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
 
-        // Map the logging level
+        // TODO : A probing operation must be executed to check if "Diwan" is allowed to make dirs and files in the
+        // purported path
         let level = match levellog {
             DiwanLevelLog::Debug => LevelFilter::Debug,
             DiwanLevelLog::Info => LevelFilter::Info,
             DiwanLevelLog::Warn => LevelFilter::Warn,
             DiwanLevelLog::Critical => LevelFilter::Error,
-            DiwanLevelLog::All => LevelFilter::Trace,
         };
 
         Ok(Self {
@@ -47,9 +48,7 @@ impl DiwanLogger {
         })
     }
 
-    /// Set up the logger
     pub fn setup_dn_logger(&self) -> Result<(), Error> {
-        // Define a custom configuration for the logger
         let config = ConfigBuilder::new()
             .add_filter_allow_str("diwan")
             .add_filter_allow_str("dn")
@@ -66,29 +65,26 @@ impl DiwanLogger {
             .set_level_color(log::Level::Debug, Some(Color::Blue))
             .build();
 
-        // Always attempt to create the log directory and file
         let log_file = self.create_log_file()?;
 
-        // Initialize the WriteLogger
         WriteLogger::init(self.level, config, log_file).context("Failed to initialize logger")?;
 
         Ok(())
     }
 
-    /// Log a message at the appropriate level
     pub fn write_to_dn_log(&self, level: DiwanLevelLog, message: &str) {
         match level {
             DiwanLevelLog::Debug => debug!("{}", message),
             DiwanLevelLog::Info => info!("{}", message),
             DiwanLevelLog::Warn => warn!("{}", message),
             DiwanLevelLog::Critical => error!("{}", message),
-            DiwanLevelLog::All => {
-                todo!()
-            }
+            // TODO : what is this ?
+            // DiwanLevelLog::All => {
+            //     todo!()
+            // }
         }
     }
 
-    /// Create the log file (and its directory if necessary)
     fn create_log_file(&self) -> Result<File, Error> {
         if let Some(parent) = self.file.parent() {
             create_dir_all(parent).context("Failed to create log directory")?;
@@ -103,7 +99,6 @@ impl DiwanLogger {
             ))
     }
 
-    /// Get the local timezone offset
     fn get_local_time() -> Result<UtcOffset, Error> {
         UtcOffset::current_local_offset().or_else(|_| {
             warn!("Local timezone offset could not be determined. Falling back to UTC.");
