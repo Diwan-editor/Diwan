@@ -3,9 +3,8 @@ resolver = "2"
 members = ["diwan-term", "diwan-lib"]
 
 default-members = ["diwan-term"]
-[build]
-rustflags = ["-A", "dead_code"]
-
+# [build]
+# rustflags = ["-A", "dead_code"]
 [profile.release]
 lto = "thin"
 
