@@ -1,15 +1,12 @@
 use anyhow::{Context, Error, Result};
 use log::{debug, error, info, warn, LevelFilter};
-use simplelog::{
-    Color, ColorChoice, CombinedLogger, ConfigBuilder, SharedLogger, TermLogger, TerminalMode,
-    WriteLogger,
-};
+use simplelog::{Color, ConfigBuilder, WriteLogger};
 use std::{
     env,
     fs::{create_dir_all, File, OpenOptions},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
-use time::{macros::format_description, OffsetDateTime, UtcOffset};
+use time::{macros::format_description, UtcOffset};
 
 /// A custom logger implementation for the Diwan application that handles file-based logging
 /// with configurable log levels and formatted output.
@@ -160,7 +157,7 @@ impl DiwanLogger {
     /// # Returns
     ///
     /// * `Result<UtcOffset, Error>` - The local timezone offset or UTC if local offset cannot be determined
-    fn get_local_time() -> Result<UtcOffset, Error> {
+    fn get_local_time() -> Result<UtcOffset, time::error::Error> {
         UtcOffset::current_local_offset().or_else(|_| {
             warn!("Local timezone offset could not be determined. Falling back to UTC.");
             Ok(UtcOffset::UTC)
