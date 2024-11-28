@@ -7,12 +7,15 @@ edition = "2021"
 anyhow = "1.0.86"
 argon2 = "0.5.3"
 cassowary = { version = "0.3.0", optional = true }
-env_logger = "0.11.5"
 fnv = { version = "1.0.7", optional = true }
-log = "0.4.22"
+log = {version = "0.4.22", optional = true }
 ropey = "1.6.1"
 signal-hook = "0.3.17"
-simplelog = "0.12.2"
+simplelog = {version = "0.12.2", optional = true }
 termwiz = { version = "0.22.0", features = ["widgets"] }
-time = "0.3.36"
+time = { version = "0.3.36", optional = true } 
 tokio = { version = "1", features = ["full"] }
+
+[features]
+default = ["dnlog"]
+dnlog = ["dep:simplelog", "dep:log", "dep:time"]

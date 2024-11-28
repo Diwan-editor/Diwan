@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use std::sync::{Arc , Mutex};
+use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
 
 pub struct Broker {
     other_handlers: Arc<Mutex<HashMap<String, JoinHandle<()>>>>,
-    widget_handlers: Arc<Mutex<HashMap<String, JoinHandle<()>>>>
+    widget_handlers: Arc<Mutex<HashMap<String, JoinHandle<()>>>>,
 }
 
 impl Broker {
