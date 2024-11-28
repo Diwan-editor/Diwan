@@ -10,6 +10,7 @@ use time::{macros::format_description, UtcOffset};
 
 /// A custom logger implementation for the Diwan application that handles file-based logging
 /// with configurable log levels and formatted output.
+#[derive(Debug, PartialEq)]
 pub struct DiwanLogger {
     /// The path to the log file where messages will be written
     pub file: PathBuf,

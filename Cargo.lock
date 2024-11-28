@@ -362,6 +362,7 @@ dependencies = [
  "clap",
  "diwan-lib",
  "lazy_static",
+ "log",
  "termwiz",
  "tokio",
 ]

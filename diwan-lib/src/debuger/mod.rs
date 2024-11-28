@@ -1,2 +1,1 @@
-mod mode_enum;
-mod statusbar_struct;
+mod statusbar;

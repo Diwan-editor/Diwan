@@ -1,4 +1,15 @@
 use crate::screen::{Modes, StatusBar};
+use core::fmt;
+use std::fmt::write;
+
+impl fmt::Display for Modes {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Modes::Normal => write!(f, "NORMAL"),
+            Modes::Insert => write!(f, "INSERT"),
+        }
+    }
+}
 
 impl Default for StatusBar {
     fn default() -> Self {
