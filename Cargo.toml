@@ -1,14 +1,24 @@
 [workspace]
 resolver = "2"
 members = ["diwan-term", "diwan-lib"]
-
 default-members = ["diwan-term"]
+
 [build]
 rustflags = ["-A", "dead_code"]
 
 [profile.release]
 lto = "thin"
 
+[profile.dev]
+lto = "off"
+panic = "unwind"
+incremental = true
+
+[profile.test]
+lto = "off"
+panic = "unwind"
+
+# TODO: what's this  ?
 [profile.opt]
 inherits = "release"
 lto = "fat"
