@@ -20,7 +20,7 @@ pub struct DiwanLogger {
 
 /// Represents the available logging levels in the Diwan application.
 /// These levels map to the standard log crate's levels but with simplified naming.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DiwanLevelLog {
     /// Detailed information for debugging purposes
     Debug,

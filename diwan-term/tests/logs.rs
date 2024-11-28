@@ -4,93 +4,67 @@ use log::LevelFilter;
 use std::{env, fs::read_to_string, path::PathBuf};
 
 #[test]
-/// simple function that test the diwan log setup
-fn test_log_setup() -> AnyhowResult<(), Error> {
+fn test_diwan_logger() -> AnyhowResult<()> {
+    // Setup test environment
     let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
     let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
 
-    let diwan_lg = DiwanLogger::new(DiwanLevelLog::Debug)?;
-    let diwan_lg1 = DiwanLogger::new(DiwanLevelLog::Info)?;
-    let diwan_lg2 = DiwanLogger::new(DiwanLevelLog::Warn)?;
-    let diwan_lg3 = DiwanLogger::new(DiwanLevelLog::Critical)?;
-    diwan_lg.setup_dn_logger()?;
+    // Test logger initialization with different levels
+    let loggers = [
+        (DiwanLevelLog::Debug, LevelFilter::Debug),
+        (DiwanLevelLog::Info, LevelFilter::Info),
+        (DiwanLevelLog::Warn, LevelFilter::Warn),
+        (DiwanLevelLog::Critical, LevelFilter::Error),
+    ];
 
-    assert_eq!(
-        diwan_lg,
-        DiwanLogger {
-            file: diwan_log_path.clone(),
-            level: LevelFilter::Debug
-        }
-    );
-    assert_eq!(
-        diwan_lg1,
-        DiwanLogger {
-            file: diwan_log_path.clone(),
-            level: LevelFilter::Info
-        }
-    );
-    assert_eq!(
-        diwan_lg2,
-        DiwanLogger {
-            file: diwan_log_path.clone(),
-            level: LevelFilter::Warn
-        }
-    );
-    assert_eq!(
-        diwan_lg3,
-        DiwanLogger {
-            file: diwan_log_path,
-            level: LevelFilter::Error
-        }
-    );
-    Ok(())
-}
+    // Test logger setup and equality
+    for (level, expected_filter) in loggers {
+        let logger = DiwanLogger::new(level)?;
+        assert_eq!(
+            logger,
+            DiwanLogger {
+                file: diwan_log_path.clone(),
+                level: expected_filter
+            }
+        );
+    }
 
-#[test]
-// fn to test the log if it works
-fn test_write_to_log() -> AnyhowResult<(), Error> {
-    let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
-    let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
-    let diwan_lg = DiwanLogger::new(DiwanLevelLog::Debug)?;
+    // Test logger setup
+    let debug_logger = DiwanLogger::new(DiwanLevelLog::Debug)?;
+    debug_logger.setup_dn_logger()?;
 
-    let test_message = "This is a test Debug";
-    diwan_lg.write_to_dn_log(DiwanLevelLog::Debug, test_message);
-    let test_message1 = "This is a test Info";
-    diwan_lg.write_to_dn_log(DiwanLevelLog::Info, test_message);
-    // let test_message = "This is a test Warn";
-    // diwan_lg.write_to_dn_log(DiwanLevelLog::Warn, test_message);
-    // let test_message = "This is a test Error";
-    // diwan_lg.write_to_dn_log(DiwanLevelLog::Critical, test_message);
+    // Test writing logs
+    let test_messages = [
+        (DiwanLevelLog::Debug, "This is a test Debug message"),
+        (DiwanLevelLog::Info, "This is a test Info message"),
+        (DiwanLevelLog::Warn, "This is a test Warn message"),
+        (DiwanLevelLog::Critical, "This is a test Critical message"),
+    ];
 
-    // content
-    let log_content = read_to_string(diwan_log_path)?;
+    // Write test messages
+    for (level, message) in &test_messages {
+        debug_logger.write_to_dn_log(level.clone(), message);
+    }
+
+    // Verify log contents
+    let log_content = read_to_string(&diwan_log_path)?;
+    for (_, message) in &test_messages {
+        assert!(
+            log_content.contains(message),
+            "Log file does not contain the message: {}",
+            message
+        );
+    }
+
+    // Optional: Test invalid path scenario
+    // Commented out as it requires root privileges or special setup
+    /*
+    env::set_var("HOME", "/invalid_path");
     assert!(
-        log_content.contains(test_message),
-        "Log file does not contain the expected message."
+        DiwanLogger::new(DiwanLevelLog::Debug).is_err(),
+        "Logger creation should fail with invalid path"
     );
-    // let log_content1 = read_to_string(diwan_log_path.clone())?;
-    // assert!(
-    //     log_content1.contains(test_message1),
-    //     "Log file does not contain the expected message."
-    // );
-    // let log_content2 = read_to_string(diwan_log_path.clone())?;
-    // assert!(
-    //     log_content2.contains(test_message2),
-    //     "Log file does not contain the expected message."
-    // );
-    // let log_content3 = read_to_string(diwan_log_path)?;
-    // assert!(
-    //     log_content3.contains(test_message3),
-    //     "Log file does not contain the expected message."
-    // );
+    */
+
     Ok(())
 }
-
-// #[test]
-// #[should_panic(expected = "Permission denied")]
-// /// Test that logger setup fails for invalid directory
-// fn failed_to_create_file_log() {
-//     env::set_var("HOME", "/invalid_path");
-
-//     let _ = DiwanLogger::new(DiwanLevelLog::Debug).unwrap();
-// }
