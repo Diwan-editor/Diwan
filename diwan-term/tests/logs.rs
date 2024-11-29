@@ -1,4 +1,4 @@
-use anyhow::{Context, Error, Result as AnyhowResult};
+use anyhow::{Context, Result as AnyhowResult};
 use diwan::logs::{DiwanLevelLog, DiwanLogger};
 use log::LevelFilter;
 use std::{env, fs::read_to_string, path::PathBuf};
@@ -29,7 +29,14 @@ fn test_diwan_logger() -> AnyhowResult<()> {
         );
     }
 
-    // Test logger setup
+    Ok(())
+}
+
+#[test]
+fn test_diwan_logger_write() -> AnyhowResult<()> {
+    let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
+    let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
+
     let debug_logger = DiwanLogger::new(DiwanLevelLog::Debug)?;
     debug_logger.setup_dn_logger()?;
 
@@ -56,15 +63,18 @@ fn test_diwan_logger() -> AnyhowResult<()> {
         );
     }
 
-    // Optional: Test invalid path scenario
-    // Commented out as it requires root privileges or special setup
-    /*
-    env::set_var("HOME", "/invalid_path");
-    assert!(
-        DiwanLogger::new(DiwanLevelLog::Debug).is_err(),
-        "Logger creation should fail with invalid path"
-    );
-    */
-
     Ok(())
 }
+
+// #[test]
+// #[should_panic]
+// fn test_diwan_logger_with_wrongpath() {
+//     // Optional: Test invalid path scenario
+//     // Commented out as it requires root privileges or special setup
+
+//     env::set_var("HOME", "/invalid_path");
+//     assert!(
+//         DiwanLogger::new(DiwanLevelLog::Debug).is_err(),
+//         "Logger creation should fail with invalid path"
+//     );
+// }
