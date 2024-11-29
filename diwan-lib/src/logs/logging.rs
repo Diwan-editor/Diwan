@@ -61,18 +61,9 @@ impl DiwanLogger {
         // TODO : A probing operation must be executed to check if "Diwan" is allowed to make dirs and files in the
         // purported path
         if let Some(parent_dir) = diwan_log_path.parent() {
-            create_dir_all(parent_dir).with_context(|| {
-                format!(
-                    "Failed to create or access directory: {}",
-                    parent_dir.display()
-                )
-            })?;
-        } else {
-            return Err(anyhow::anyhow!(
-                "Invalid path: could not determine parent directory for {}",
-                diwan_log_path.display()
-            ));
+            create_dir_all(parent_dir).context("couldn't create directory")?;
         }
+
         let level = match levellog {
             DiwanLevelLog::Debug => LevelFilter::Debug,
             DiwanLevelLog::Info => LevelFilter::Info,
