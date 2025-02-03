@@ -18,7 +18,7 @@ pub struct StatusBar {
     /// <code>INSERT</code>, <code>NORMAL</code>) which will be displayed in
     /// the status bar.
     /// </div>
-    pub status_mode: String,
+    pub status_mode: Modes,
     /// <div>
     /// <code>Filename:</code> Stores the filename (e.g. <code>dummy.rs</code>) which will be displayed in
     /// the status bar.
@@ -64,7 +64,7 @@ impl StatusBar {
     /// status_bar.update(&Modes::Insert);
     /// ```
     pub fn update(&mut self, mode: &Modes) {
-        self.status_mode = format!("{:?}", mode);
+        self.status_mode = mode.clone();
     }
     /// Renders the status bar at the bottom of the screen.
     ///
@@ -88,7 +88,7 @@ impl StatusBar {
 
         let status_text = format!(
             "{:<20}{:^width$}{:>20}",
-            self.status_mode.to_uppercase(),
+            self.status_mode.to_string().to_uppercase(),
             self.filename,
             format!("{}:{}", cursor_y + 1, cursor_x + 1),
             width = width_for_center

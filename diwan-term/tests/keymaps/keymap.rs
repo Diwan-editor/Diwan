@@ -64,7 +64,7 @@ fn test_insert_mode() -> AnyResult<(), Error> {
     // Since I am testing over the insert mode
     assert_eq!(
         dnwidget.1.status_bar.status_mode,
-        Modes::Normal.to_string(),
+        Modes::Normal,
         "Status mode should be Normal"
     );
 

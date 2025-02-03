@@ -115,6 +115,7 @@ impl MainScreen {
         buf: &mut BufferedTerminal<impl Terminal>,
         ui: &mut SendableUi,
     ) -> Result<(), Error> {
+
         loop {
             // Process any queued UI events (if present)
             ui.process_event_queue()?;
@@ -170,5 +171,10 @@ impl MainScreen {
         if let Err(e) = Keymap::close_terminal(buffer) {
             eprintln!("Failed to close terminal gracefully: {}", e);
         }
+    }
+
+    pub fn update_status_mode(&mut self, mode: Modes) {
+        self.mode = mode.clone();
+        self.status_bar.status_mode = mode.clone();
     }
 }

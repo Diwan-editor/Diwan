@@ -47,10 +47,9 @@ async fn main() -> Result<(), Error> {
         // init a mutex string for our poet :)
         let typed_text = Arc::new(Mutex::new(String::new()));
         // in simplified lang: combine the initialized bufer and content String
-        // and returna mutable buffer and main_screen for displaying everingthing
+        // and return a mutable buffer and main_screen for displaying everingthing
         let (mut buffer, main_screen) =
             MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
-
         // set up the ui
         let shared_ui = Arc::new(Mutex::new(main_screen.setup_ui()));
 
@@ -63,26 +62,6 @@ async fn main() -> Result<(), Error> {
             MainScreen::main_event_loop(&mut buffer, &mut ui).unwrap();
         })
         .await;
-
-        // let logger_handler = task::spawn(async move {
-        //     let mut logger = Logger::setup_login().unwrap();
-
-        //     logger.write_logs("example log", diwan::loging::loging::Criticality::Normal)
-        // })
-        // .await;
-        // // Second UI
-        // let dnbuffer2 = MainScreen::new_buffered_term()?;
-        // let typed_text2 = Arc::new(Mutex::new(String::new()));
-        // let (mut buffer2, main_screen2) =
-        //     MainScreen::new_with_widget(dnbuffer2, Arc::clone(&typed_text2))?;
-        // let ui_clone2 = shared_ui.clone();
-
-        // task::spawn(async move {
-        //     let mut ui = ui_clone2.lock().unwrap();
-        //     let _widget_id = ui.add(None, main_screen2);
-        //     MainScreen::main_event_loop(&mut buffer2, &mut ui).unwrap();
-        // });
-        // tokio::signal::ctrl_c().await?;
         println!("Shutting down...");
         exit(0);
     }

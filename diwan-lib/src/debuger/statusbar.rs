@@ -14,7 +14,7 @@ impl fmt::Display for Modes {
 impl Default for StatusBar {
     fn default() -> Self {
         StatusBar {
-            status_mode: Modes::Normal.to_string(),
+            status_mode: Modes::Normal,
             filename: "[SCRATCH]".to_string(), //NOTE: try to call struct field that controls over the file path
         }
     }

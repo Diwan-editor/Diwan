@@ -16,7 +16,7 @@ use super::MainScreen;
 pub struct Keymap;
 
 /// Represents the modes in which the editor can operate.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Modes {
     /// The normal mode for navigation.
     Normal,
@@ -249,5 +249,12 @@ impl Keymap {
 
     fn persists_string_in_yank(pasted_string: &String, yank: Arc<Mutex<Vec<String>>>) {
         yank.lock().unwrap().push(pasted_string.to_owned());
+    }
+}
+
+
+impl Default for Modes {
+    fn default() -> Self {
+        Modes::Normal
     }
 }

@@ -16,7 +16,6 @@ incremental = true
 lto = "off"
 # panic = "unwind"
 
-# TODO: what's this  ?
 [profile.opt]
 inherits = "release"
 lto = "fat"
