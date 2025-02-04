@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["diwan-term", "diwan-lib"]
-default-members = ["diwan-term"]
+members = ["diwan", "diwan-lib"]
+default-members = ["diwan"]
 [build]
 rustflags = ["-A", "dead_code"]
 [profile.release]

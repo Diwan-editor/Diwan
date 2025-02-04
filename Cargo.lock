@@ -338,6 +338,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "diwan"
+version = "1.0.0-1"
+dependencies = [
+ "anyhow",
+ "clap",
+ "diwan-lib",
+ "lazy_static",
+ "log",
+ "termwiz",
+ "tokio",
+]
+
+[[package]]
 name = "diwan-lib"
 version = "0.1.0"
 dependencies = [
@@ -351,19 +364,6 @@ dependencies = [
  "simplelog",
  "termwiz",
  "time",
- "tokio",
-]
-
-[[package]]
-name = "diwan-term"
-version = "1.0.0-1"
-dependencies = [
- "anyhow",
- "clap",
- "diwan-lib",
- "lazy_static",
- "log",
- "termwiz",
  "tokio",
 ]
 

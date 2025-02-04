@@ -1,5 +1,5 @@
 [package]
-name = "diwan-term"
+name = "diwan"
 description.workspace = true
 version.workspace = true
 edition.workspace = true
