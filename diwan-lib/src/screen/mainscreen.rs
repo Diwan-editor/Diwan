@@ -71,7 +71,10 @@ impl MainScreen {
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
+
         let status_bar = StatusBar::default();
+        let yank = Arc::new(Mutex::new(vec![])) ;
+
         Ok((
             buffer,
             Self {
@@ -79,7 +82,7 @@ impl MainScreen {
                 mode: Modes::Normal,
                 cursor_x: 0,
                 cursor_y: 0,
-                yank: Arc::new(Mutex::new(vec![])),
+                yank,
                 status_bar,
             },
         ))
@@ -115,7 +118,6 @@ impl MainScreen {
         buf: &mut BufferedTerminal<impl Terminal>,
         ui: &mut SendableUi,
     ) -> Result<(), Error> {
-
         loop {
             // Process any queued UI events (if present)
             ui.process_event_queue()?;

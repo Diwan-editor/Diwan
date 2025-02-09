@@ -66,6 +66,8 @@ impl StatusBar {
     pub fn update(&mut self, mode: &Modes) {
         self.status_mode = mode.clone();
     }
+
+    // code must be refactored so it can be generalized !
     /// Renders the status bar at the bottom of the screen.
     ///
     /// # Arguments
@@ -86,6 +88,7 @@ impl StatusBar {
 
         let width_for_center = available_width.saturating_sub(MIN_CONTENT_WIDTH);
 
+        // 👇🏼 this will be changed to accomodate for varrying components
         let status_text = format!(
             "{:<20}{:^width$}{:>20}",
             self.status_mode.to_string().to_uppercase(),
@@ -94,7 +97,6 @@ impl StatusBar {
             width = width_for_center
         );
 
-        // let status_bar_y =  height.overflowing_sub (STATUS_BAR_OFFSET);
         let (status_bar_y, _) = height.overflowing_sub(STATUS_BAR_OFFSET);
 
         // Prepare all changes in a vector
@@ -120,17 +122,20 @@ impl StatusBar {
             Change::Text(" ".repeat(PADDING)),
         ];
 
-        // Fill the rest of the line if necessary
-        // if available_width > status_text.len() {
-        //     let remaining_space = available_width.saturating_sub(status_text.len());
-        //     changes.push(Change::Text(" ".repeat(remaining_space)));
-        // }
-
         // Clear the line below the status bar
+        // why ?
         changes.extend_from_slice(&[Change::CursorPosition {
             x: Position::Absolute(0),
             y: Position::Relative(1),
         }]);
+
+        // why not just this
+        // changes.append(Change::CursorPosition {
+        //     x: Position::Absolute(0),
+        //     y: Position::Relative(1),
+        // });
+
+        // Why not just declare everything on top ?
 
         // Apply all changes at once
         args.surface.add_changes(changes);

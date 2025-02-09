@@ -252,7 +252,6 @@ impl Keymap {
     }
 }
 
-
 impl Default for Modes {
     fn default() -> Self {
         Modes::Normal
