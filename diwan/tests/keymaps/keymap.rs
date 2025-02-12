@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use crate::keymaps::{apply_keybind, assert_cursor, assert_emptiness_content};
 use anyhow::{Error, Result as AnyResult};
 use diwan::screen::{Keymap, MainScreen, Modes};
-use termwiz::{input::KeyCode, terminal};
+use termwiz::input::KeyCode;
 
 #[test]
 fn test_insert_mode() -> AnyResult<(), Error> {

@@ -73,7 +73,7 @@ impl MainScreen {
         buffer.terminal().enter_alternate_screen()?;
 
         let status_bar = StatusBar::default();
-        let yank = Arc::new(Mutex::new(vec![])) ;
+        let yank = Arc::new(Mutex::new(vec![]));
 
         Ok((
             buffer,

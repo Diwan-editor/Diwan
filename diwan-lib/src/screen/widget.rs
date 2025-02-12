@@ -35,7 +35,6 @@ impl Widget for MainScreen {
         let text_content = self.text.lock().unwrap();
         let (width, height) = args.surface.dimensions();
 
-
         const GRV_COLOR_BACK: (u8, u8, u8) = (29, 32, 33);
         const WHITE: (u8, u8, u8) = (251, 241, 194);
         // TODO: Something lighter would be preferrable here
@@ -52,7 +51,7 @@ impl Widget for MainScreen {
         // why all this madeness ? this is 1 ?
         //let line_number_width = (height as f64).log10().ceil()  as usize ; ❌
 
-        let line_number_width = 2 ;
+        let line_number_width = 2;
 
         // Determine how many lines of text we have
         let total_lines = text_content.lines().count();
@@ -64,7 +63,7 @@ impl Widget for MainScreen {
         // Render the line numbers
         for y in 0..content_height {
             let line_text = match y.cmp(&effective_lines) {
-                Ordering::Less => format!("{:width$} ", y +  1 , width = line_number_width),
+                Ordering::Less => format!("{:width$} ", y + 1, width = line_number_width),
                 Ordering::Equal => "~".to_string(),
                 Ordering::Greater => "~".to_string(),
             };

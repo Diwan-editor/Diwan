@@ -1,4 +1,5 @@
-#![cfg(test)]
-mod keymaps;
-mod logs;
-mod widget;
+#[cfg(test)]
+pub mod mocking;
+pub mod keymaps;
+pub mod logs;
+pub mod widget;

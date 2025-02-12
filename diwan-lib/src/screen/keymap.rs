@@ -132,12 +132,6 @@ impl Keymap {
         let lines: Vec<&str> = content.lines().collect();
         let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));
 
-        // If the current line starts with a `~`, remove it before inserting the character
-        // if lines[*cursor_y].trim() == "~" {
-        //     let line_start = Self::get_byte_position(&lines, (0, *cursor_y));
-        //     content.replace_range(line_start..line_start + 1, "EOF");
-        // }
-
         // Insert the new character
         content.insert(byte_pos, c);
         *cursor_x += 1;
