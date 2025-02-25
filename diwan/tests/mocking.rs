@@ -38,14 +38,12 @@ pub fn bootstrap_diwan() -> Result<(Arc<Mutex<BufferedTerminal<UnixTerminal>>>, 
     let my_buffer = Arc::new(Mutex::new(buffer));
     let my_main_screen = Arc::new(Mutex::new(main_screen));
     // set up the ui
-    let shared_ui = Arc::new(Mutex::new(main_screen.setup_ui()));
-
-    // clone the shared ui
-    // enter the main loop
+    let shared_ui = Arc::new(Mutex::new(my_main_screen.lock().unwrap().setup_ui()));
 
     let ui = shared_ui.clone();
-    let handler = std::thread::spawn(move || {
+    let handler = std::thread::spawn(|| {
 
+        // clone the shared ui
         MainScreen::main_event_loop(&mut my_buffer.lock().unwrap(), &mut ui.lock().unwrap()).unwrap();
     });
 

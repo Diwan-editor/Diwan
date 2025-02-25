@@ -45,11 +45,14 @@ async fn main() -> Result<(), Error> {
         // init the a new buffered terminal
         let dnbuffer = MainScreen::new_buffered_term()?;
         // init a mutex string for our poet :)
-        let typed_text = Arc::new(Mutex::new(String::new()));
+        // potentially no need
+        //let typed_text = Arc::new(Mutex::new(String::new()));
         // in simplified lang: combine the initialized bufer and content String
         // and return a mutable buffer and main_screen for displaying everingthing
+        // let (mut buffer, main_screen) =
+        //     MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
         let (mut buffer, main_screen) =
-            MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
+            MainScreen::new_with_widget(dnbuffer)?;
         // set up the ui
         let shared_ui = Arc::new(Mutex::new(main_screen.setup_ui()));
 
@@ -62,7 +65,7 @@ async fn main() -> Result<(), Error> {
             MainScreen::main_event_loop(&mut buffer, &mut ui).unwrap();
         })
         .await;
-        println!("Shutting down...");
+        println!("Shutting down Normally...");
         exit(0);
     }
     Ok(())

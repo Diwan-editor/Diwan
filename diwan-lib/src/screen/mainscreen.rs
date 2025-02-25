@@ -13,7 +13,7 @@ use super::{Keymap, SendableUi, StatusBar};
 /// The `MainScreen` struct deals with rendering the main screen of the Diwan editor.
 pub struct MainScreen {
     /// Shared text content
-    pub text: Arc<Mutex<String>>,
+    pub text: String,
     /// Modes (Normal, Insert, etc.)
     pub mode: Modes,
     /// X position of the cursor
@@ -66,8 +66,7 @@ impl MainScreen {
     /// let (buffer, widget) = MainScreen::new_with_widget(buffer, content).unwrap();
     /// ```
     pub fn new_with_widget(
-        mut buffer: BufferedTerminal<UnixTerminal>,
-        content: Arc<Mutex<String>>,
+        mut buffer: BufferedTerminal<UnixTerminal>
     ) -> Result<(BufferedTerminal<UnixTerminal>, Self), Error> {
         buffer.terminal().set_raw_mode()?;
         buffer.terminal().enter_alternate_screen()?;
@@ -78,7 +77,7 @@ impl MainScreen {
         Ok((
             buffer,
             Self {
-                text: content,
+                text: String::new(),
                 mode: Modes::Normal,
                 cursor_x: 0,
                 cursor_y: 0,

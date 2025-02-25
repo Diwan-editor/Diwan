@@ -102,13 +102,13 @@ impl Keymap {
     /// - `mode`: Mutable reference to the current mode.
     pub fn handle_action(
         action: Actions,
-        content: Arc<Mutex<String>>,
+        content: &mut String,
         cursor_x: &mut usize,
         cursor_y: &mut usize,
         mode: &mut Modes,
         yank: Arc<Mutex<Vec<String>>>,
     ) {
-        let mut content_guard = content.lock().unwrap();
+        let mut content_guard = content;
         let lines: Vec<&str> = content_guard.lines().collect();
 
         match action {
@@ -231,7 +231,7 @@ impl Keymap {
         pasted_string: String,
         cursor_x: &mut usize,
         cursor_y: &mut usize,
-        content: &mut std::sync::MutexGuard<'_, String>,
+        content: &mut String,
     ) {
         let lines: Vec<&str> = content.lines().collect();
         let byte_pos = Self::get_byte_position(&lines, (*cursor_x, *cursor_y));

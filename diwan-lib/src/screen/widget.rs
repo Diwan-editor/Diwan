@@ -14,7 +14,7 @@ impl Widget for MainScreen {
         if let Some(action) = Keymap::map_key_to_action(event, &self.mode) {
             Keymap::handle_action(
                 action,
-                self.text.clone(),
+                &mut self.text,
                 &mut self.cursor_x,
                 &mut self.cursor_y,
                 &mut self.mode,
@@ -32,7 +32,7 @@ impl Widget for MainScreen {
         // TF wrote that ? tf is text_guarded ?
         // Lock the content only briefly to access it
 
-        let text_content = self.text.lock().unwrap();
+        let text_content = &self.text;
         let (width, height) = args.surface.dimensions();
 
         const GRV_COLOR_BACK: (u8, u8, u8) = (29, 32, 33);
