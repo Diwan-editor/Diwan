@@ -108,7 +108,7 @@ impl Keymap {
         mode: &mut Modes,
         yank: Arc<Mutex<Vec<String>>>,
     ) {
-        let mut content_guard = content;
+        let content_guard = content;
         let lines: Vec<&str> = content_guard.lines().collect();
 
         match action {
@@ -116,15 +116,15 @@ impl Keymap {
             Actions::MoveRight => Self::move_cursor_right(cursor_x, cursor_y, &lines),
             Actions::MoveUp => Self::move_cursor_up(cursor_x, cursor_y, &lines),
             Actions::MoveDown => Self::move_cursor_down(cursor_x, cursor_y, &lines),
-            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content_guard),
+            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, content_guard),
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
-            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
+            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, content_guard), // Uneeded &mut so far
             Actions::Paste(pasted_string) => {
                 Self::persists_string_in_yank(&pasted_string, yank);
-                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard)
+                Self::insert_string(pasted_string, cursor_x, cursor_y, content_guard)
             }
-            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
+            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, content_guard),
         }
     }
     /// Inserts a character at the cursor position.
