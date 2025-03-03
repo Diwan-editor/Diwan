@@ -37,6 +37,7 @@ impl Widget for MainScreen {
 
         const GRV_COLOR_BACK: (u8, u8, u8) = (29, 32, 33);
         const WHITE: (u8, u8, u8) = (251, 241, 194);
+        const GRAY_NUMBER_LINES: (u8, u8, u8) = (189, 174, 147);
         // TODO: Something lighter would be preferrable here
         const YELLOW_NUMBER_LINES: (u8, u8, u8) = (0xFA, 0xBD, 0x2F);
 
@@ -77,12 +78,14 @@ impl Widget for MainScreen {
                 // color the number of lines
                 Change::Attribute(AttributeChange::Foreground(
                     ColorAttribute::TrueColorWithPaletteFallback(
-                        (YELLOW_NUMBER_LINES).into(),
+                        (GRAY_NUMBER_LINES).into(),
                         AnsiColor::White.into(),
                     ),
                 )),
+                Change::Attribute(AttributeChange::Intensity(termwiz::cell::Intensity::Bold)),
                 // render the numbers
                 Change::Text(line_text),
+                Change::Attribute(AttributeChange::Intensity(termwiz::cell::Intensity::Normal)),
                 // reset the color
                 Change::Attribute(AttributeChange::Foreground(
                     ColorAttribute::TrueColorWithPaletteFallback(

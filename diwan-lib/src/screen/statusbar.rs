@@ -143,13 +143,11 @@ impl StatusBar {
                 ),
             )),
             Change::Attribute(AttributeChange::Intensity(termwiz::cell::Intensity::Bold)),
-            Change::Attribute(AttributeChange::Italic(true)),
             Change::Text(mode_text.clone()), // Apply background to the text area only
         ]);
 
         // Reset background for the rest of the line
         changes.extend([
-            Change::Attribute(AttributeChange::Italic(false)),
             Change::Attribute(AttributeChange::Intensity(termwiz::cell::Intensity::Normal)),
             // rest the text color to white
             Change::Attribute(AttributeChange::Foreground(
