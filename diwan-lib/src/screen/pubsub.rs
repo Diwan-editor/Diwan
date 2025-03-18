@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::sync::{Arc, Mutex};
 
+use crate::logs::{self, DiwanLogger};
 use crate::screen::DWidget;
 use anyhow::Error;
 use termwiz::caps::Capabilities;
@@ -17,6 +18,7 @@ use super::{Keymap, Modes, SendableUi, StatusBar};
 use termwiz::input::Modifiers;
 use termwiz::input::KeyCode;
 use termwiz::input::KeyEvent;
+use crate::logs::DiwanLevelLog;
 
 // is it necessary to initialize the terminal buffer before feeding it to the widget ?
 /// # new_buffered_term
@@ -105,9 +107,13 @@ pub fn setup_ui() -> SendableUi<'static> {
     SendableUi::new(ui)
 }
 
-
 pub fn set_root(ui: &mut Ui, widget: DWidget ) -> Result<WidgetId, Error> {
     Ok(ui.set_root(widget))
+}
+
+pub fn set_focus(ui: &mut Ui, widget_id: &WidgetId ) -> Result<(), Error> {
+    ui.set_focus(widget_id.clone());
+    Ok(())
 }
 
 /// Main event loop for handling terminal input and refreshing the UI.
@@ -137,14 +143,32 @@ pub fn main_event_loop(
 
         // much check if the buf selected is in focus !
         // but how to do that ?
+        // buf.add_change(Change::Title("title".to_owned()));
+
+        // testing assigning the ascii code for `closing brackets` manually
+        // let closing_brackets = char::from_u32(135).unwrap();
+        // 👆something's clearly not ok with targeting this
 
         // Handle user input (polling for key presses)
         match buf.terminal().poll_input(None) {
             Ok(Some(input)) => match input {
+                // try decreasing frame widh , no effects comes from here
+                InputEvent::Key(KeyEvent {
+                    key: KeyCode::Char('['),
+                    modifiers: Modifiers::ALT,
+                }) => {
+                    increase_width(buf);
+                }
+                InputEvent::Key(KeyEvent {
+                    key: KeyCode::Char(']'),
+                    modifiers: Modifiers::ALT,
+                }) => {
+                    decrease_width(buf);
+                }
                 // Close buffer on Ctrl+x
                 InputEvent::Key(KeyEvent {
                     key: KeyCode::Char('x'),
-                    modifiers: Modifiers::LEFT_CTRL,
+                    modifiers: Modifiers::CTRL,
                 }) => {
                     close_buffer(buf);
                     break;
@@ -194,4 +218,18 @@ pub fn quit_application(buffer: &mut BufferedTerminal<impl Terminal>) {
 /// func that closes a buffer
 pub fn close_buffer(buffer: &mut BufferedTerminal<impl Terminal>) {
     todo!()
+}
+
+/// why this shit dont work !
+pub fn decrease_width(buffer: &mut BufferedTerminal<impl Terminal>) {
+    let (width , height ) = buffer.dimensions();
+
+   buffer.resize(width - 1, height);
+}
+
+/// to comment well !
+pub fn increase_width(buffer: &mut BufferedTerminal<impl Terminal>) {
+    let (width , height ) = buffer.dimensions();
+
+   buffer.resize(width + 1 , height);
 }

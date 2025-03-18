@@ -66,6 +66,7 @@ impl Widget for DWidget {
     /// Render the screen content, including text and the status bar
     // NOTE: the rendering of the line of numbers are multiplied idk why?
     fn render(&mut self, args: &mut RenderArgs) {
+
         // TF wrote that ? tf is text_guarded ?
         // Lock the content only briefly to access it
 

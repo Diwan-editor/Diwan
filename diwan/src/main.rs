@@ -5,7 +5,7 @@ use clap::{
 };
 use diwan::logs::{DiwanLevelLog, DiwanLogger};
 use diwan::screen::DWidget;
-use termwiz::widgets::WidgetId;
+use termwiz::{surface::Change, widgets::{WidgetEvent, WidgetId}};
 use diwan::screen::pubsub::*;
 use std::{
     process::exit,
@@ -61,46 +61,32 @@ async fn main() -> Result<(), Error> {
             new_with_widget(dnbuffer2)?;
         let (_, mut widget3) =
             new_with_widget(dnbuffer3)?;
+
         // set up the ui
         let shared_ui = Arc::new(Mutex::new(setup_ui()));
-        let main_screen_id = set_root(&mut shared_ui.lock().unwrap(), main_screen);
+        let main_screen_id = set_root(&mut shared_ui.lock().unwrap(), main_screen)?;
+        set_focus(&mut shared_ui.lock().unwrap(), &main_screen_id);
+
         //tempo </
-        buffer2.resize(10, 10); //
-        dbg!(buffer2.title());
-        // let widget_id = widget2.widget_id.clone(); // we dont actually need this !
+        // buffer2.resize(10, 100); //
         let id_value_2 = shared_ui.lock().unwrap().add(None, widget2.clone());
         widget2.update_widget_id(id_value_2);
         let id_value_3 = shared_ui.lock().unwrap().add(None, widget3.clone());
         widget3.update_widget_id(id_value_3);
-        // let ui_clone = shared_ui.clone();
-        // let mut locked = ui_clone.lock().unwrap();
-        // let _ = locked.render_to_screen(&mut buffer2);
-
-         //shared_ui.lock().unwrap().set_focus(id_value); // this cause the tempo !
-         //issue />
-
 
         // clone the shared ui
         let ui_clone = shared_ui.clone();
         let _ = task::spawn(async move {
             // lock the ui in order to be used for this green thread
             let mut ui = ui_clone.lock().unwrap();
+            buffer.add_change(Change::Title("this is a dumb title".to_owned()));
+            buffer2.add_change(Change::Title("this is another dumb title".to_owned()));
             // enter the main loop
             main_event_loop(&mut buffer, &mut ui).unwrap();
             main_event_loop(&mut buffer2, &mut ui).unwrap();
         })
         .await;
 
-
-
-
-        // let _ = task::spawn(async move {
-        //     // lock the ui in order to be used for this green thread
-        //     let mut ui = ui_clone.lock().unwrap();
-        //     // enter the main loop
-        //     DWidget::main_event_loop(&mut buffer2, &mut ui).unwrap();
-        // }).await;
-        // shared_ui.lock().unwrap().add_child(, widget2);
         println!("Shutting down Normally...");
         exit(0);
     }

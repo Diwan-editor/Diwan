@@ -77,6 +77,44 @@ impl DiwanLogger {
         })
     }
 
+    /// Creates a new DiwanLogger instance with the specified log level.
+    ///
+    /// # Arguments
+    ///
+    /// * `levellog` - The desired logging level for the logger
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Self, Error>` - A new logger instance or an error if initialization fails
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if:
+    /// * The log directory cannot be created
+    pub fn new_local(levellog: DiwanLevelLog) -> Result<Self, Error> {
+        // TODO : to remove this , home_dir can be infered from the pwd
+        let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
+        let diwan_log_path = PathBuf::from("./");
+
+        // TODO : A probing operation must be executed to check if "Diwan" is allowed to make dirs and files in the
+        // purported path
+        if let Some(parent_dir) = diwan_log_path.parent() {
+            create_dir_all(parent_dir).context("couldn't create directory")?;
+        }
+
+        let level = match levellog {
+            DiwanLevelLog::Debug => LevelFilter::Debug,
+            DiwanLevelLog::Info => LevelFilter::Info,
+            DiwanLevelLog::Warn => LevelFilter::Warn,
+            DiwanLevelLog::Critical => LevelFilter::Error,
+        };
+
+        Ok(Self {
+            file: diwan_log_path,
+            level,
+        })
+    }
+
     /// Initializes the logging system with custom configuration and file output.
     ///
     /// Sets up a configured logger with:

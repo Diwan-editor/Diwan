@@ -4,7 +4,7 @@ use std::{
 };
 
 use termwiz::{
-    input::{InputEvent, KeyCode, KeyEvent},
+    input::{InputEvent, KeyCode, KeyEvent, Modifiers},
     terminal::{buffered::BufferedTerminal, Terminal},
     widgets::WidgetEvent,
     Error as KeymapError,
@@ -62,6 +62,17 @@ impl Keymap {
     ///
     /// An `Option<Actions>` indicating the mapped action, or `None` if no action is mapped.
     pub fn map_key_to_action(event: &WidgetEvent, mode: &Modes) -> Option<Actions> {
+        // testing
+        // if let WidgetEvent::Input(InputEvent::Key(KeyEvent {
+       //              key: KeyCode::Char(']'),
+       //              modifiers: Modifiers::ALT,
+       //          })) = event {
+       //      dbg!("hamiiid");
+       // return None;
+       //  }
+
+
+
         if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, .. })) = event {
             match mode {
                 Modes::Normal => match key {
