@@ -4,7 +4,9 @@ use clap::{
     Parser,
 };
 use diwan::logs::{DiwanLevelLog, DiwanLogger};
-use diwan::screen::MainScreen;
+use diwan::screen::DWidget;
+use termwiz::widgets::WidgetId;
+use diwan::screen::pubsub::*;
 use std::{
     process::exit,
     sync::{Arc, Mutex},
@@ -43,7 +45,9 @@ async fn main() -> Result<(), Error> {
         );
     } else {
         // init the a new buffered terminal
-        let dnbuffer = MainScreen::new_buffered_term()?;
+        let dnbuffer = new_buffered_term()?;
+        let dnbuffer2 = new_buffered_term()?;
+        let dnbuffer3 = new_buffered_term()?;
         // init a mutex string for our poet :)
         // potentially no need
         //let typed_text = Arc::new(Mutex::new(String::new()));
@@ -51,10 +55,30 @@ async fn main() -> Result<(), Error> {
         // and return a mutable buffer and main_screen for displaying everingthing
         // let (mut buffer, main_screen) =
         //     MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
-        let (mut buffer, main_screen) =
-            MainScreen::new_with_widget(dnbuffer)?;
+        let (mut buffer, mut main_screen) =
+            new_with_widget(dnbuffer)?;
+        let (mut buffer2, mut widget2) =
+            new_with_widget(dnbuffer2)?;
+        let (_, mut widget3) =
+            new_with_widget(dnbuffer3)?;
         // set up the ui
-        let shared_ui = Arc::new(Mutex::new(main_screen.setup_ui()));
+        let shared_ui = Arc::new(Mutex::new(setup_ui()));
+        let main_screen_id = set_root(&mut shared_ui.lock().unwrap(), main_screen);
+        //tempo </
+        buffer2.resize(10, 10); //
+        dbg!(buffer2.title());
+        // let widget_id = widget2.widget_id.clone(); // we dont actually need this !
+        let id_value_2 = shared_ui.lock().unwrap().add(None, widget2.clone());
+        widget2.update_widget_id(id_value_2);
+        let id_value_3 = shared_ui.lock().unwrap().add(None, widget3.clone());
+        widget3.update_widget_id(id_value_3);
+        // let ui_clone = shared_ui.clone();
+        // let mut locked = ui_clone.lock().unwrap();
+        // let _ = locked.render_to_screen(&mut buffer2);
+
+         //shared_ui.lock().unwrap().set_focus(id_value); // this cause the tempo !
+         //issue />
+
 
         // clone the shared ui
         let ui_clone = shared_ui.clone();
@@ -62,9 +86,21 @@ async fn main() -> Result<(), Error> {
             // lock the ui in order to be used for this green thread
             let mut ui = ui_clone.lock().unwrap();
             // enter the main loop
-            MainScreen::main_event_loop(&mut buffer, &mut ui).unwrap();
+            main_event_loop(&mut buffer, &mut ui).unwrap();
+            main_event_loop(&mut buffer2, &mut ui).unwrap();
         })
         .await;
+
+
+
+
+        // let _ = task::spawn(async move {
+        //     // lock the ui in order to be used for this green thread
+        //     let mut ui = ui_clone.lock().unwrap();
+        //     // enter the main loop
+        //     DWidget::main_event_loop(&mut buffer2, &mut ui).unwrap();
+        // }).await;
+        // shared_ui.lock().unwrap().add_child(, widget2);
         println!("Shutting down Normally...");
         exit(0);
     }

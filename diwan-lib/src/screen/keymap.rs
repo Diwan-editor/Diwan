@@ -10,7 +10,7 @@ use termwiz::{
     Error as KeymapError,
 };
 
-use super::MainScreen;
+use super::DWidget;
 
 /// `keymap` for handling key mappings in the Diwan editor.
 pub struct Keymap;

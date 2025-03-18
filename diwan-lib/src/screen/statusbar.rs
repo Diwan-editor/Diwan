@@ -1,4 +1,4 @@
-use super::{MainScreen, Modes};
+use super::{DWidget, Modes};
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
 use termwiz::surface::{Change, Position};
@@ -12,6 +12,7 @@ use termwiz::widgets::*;
 ///     <li><code style="color:yellow">Language</code>: The programming language of the file</li>
 ///     <li><code style="color:yellow">Git Status</code>: The current Git status of the file</li>
 /// </ul>
+#[derive(Debug, Clone)]
 pub struct StatusBar {
     /// <div>
     /// <code>Current Mode:</code> Stores the current mode (e.g.,

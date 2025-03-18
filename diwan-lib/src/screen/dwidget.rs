@@ -1,14 +1,51 @@
-use std::cmp::Ordering;
-
-use crate::screen::MainScreen;
+use std::sync::{Arc, Mutex};
+use termwiz::caps::Capabilities;
+use termwiz::input::*;
+use termwiz::surface::{Change, Position};
+use termwiz::terminal::UnixTerminal;
+use termwiz::terminal::{buffered::BufferedTerminal, Terminal};
+use termwiz::widgets::{Ui, WidgetEvent, WidgetId};
+use termwiz::Error;
 use termwiz::cell::AttributeChange;
 use termwiz::color::{AnsiColor, ColorAttribute};
-use termwiz::surface::{self, Change, Position, Surface};
-use termwiz::widgets::*;
 
+use std::cmp::Ordering;
+use termwiz::widgets::*;
 use super::{Keymap, Modes, StatusBar};
 
-impl Widget for MainScreen {
+/// The `MainScreen` struct deals with rendering the main screen of the Diwan editor.
+#[derive(Debug, Clone)]
+pub struct DWidget {
+    /// Shared text content
+    pub text: String,
+    /// Modes (Normal, Insert, etc.)
+    pub mode: Modes,
+    /// X position of the cursor
+    pub cursor_x: usize,
+    /// Y position of the cursor
+    pub cursor_y: usize,
+    /// Status bar displaying mode, etc.
+    pub status_bar: StatusBar,
+    /// History
+    pub yank: Arc<Mutex<Vec<String>>>,
+    /// Unique Identifier
+    pub widget_id: WidgetId
+}
+
+impl DWidget {
+
+    pub fn update_status_mode(&mut self, mode: Modes) {
+        self.mode = mode.clone();
+        self.status_bar.status_mode = mode.clone();
+    }
+
+    pub fn update_widget_id(&mut self, id: WidgetId) {
+        self.widget_id = id;
+    }
+}
+
+
+impl Widget for DWidget {
     /// Process input events and update the screen
     fn process_event(&mut self, event: &WidgetEvent, _args: &mut UpdateArgs) -> bool {
         if let Some(action) = Keymap::map_key_to_action(event, &self.mode) {
