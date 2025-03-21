@@ -65,7 +65,7 @@ pub fn new_buffered_term() -> Result<BufferedTerminal<UnixTerminal>, Error> {
 /// let (buffer, widget) = MainScreen::new_with_widget(buffer, content).unwrap();
 /// ```
 pub fn new_with_widget(
-    mut buffer: BufferedTerminal<UnixTerminal>
+    buffer: BufferedTerminal<UnixTerminal>
 ) -> Result<(BufferedTerminal<UnixTerminal>, DWidget), Error> {
 
 
@@ -103,7 +103,7 @@ pub fn new_with_widget(
 /// This will set the `MainScreen` as the root widget and prepare the UI for rendering
 
 pub fn setup_ui() -> SendableUi<'static> {
-    let mut ui = Ui::new();
+    let ui = Ui::new();
     SendableUi::new(ui)
 }
 
@@ -111,9 +111,8 @@ pub fn set_root(ui: &mut Ui, widget: DWidget ) -> Result<WidgetId, Error> {
     Ok(ui.set_root(widget))
 }
 
-pub fn set_focus(ui: &mut Ui, widget_id: &WidgetId ) -> Result<(), Error> {
+pub fn set_focus(ui: &mut Ui, widget_id: &WidgetId ){
     ui.set_focus(widget_id.clone());
-    Ok(())
 }
 
 /// Main event loop for handling terminal input and refreshing the UI.

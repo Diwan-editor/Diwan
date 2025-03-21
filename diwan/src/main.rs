@@ -4,8 +4,7 @@ use clap::{
     Parser,
 };
 use diwan::logs::{DiwanLevelLog, DiwanLogger};
-use diwan::screen::DWidget;
-use termwiz::{surface::Change, widgets::{WidgetEvent, WidgetId}};
+use termwiz::surface::Change;
 use diwan::screen::pubsub::*;
 use std::{
     process::exit,
@@ -55,7 +54,7 @@ async fn main() -> Result<(), Error> {
         // and return a mutable buffer and main_screen for displaying everingthing
         // let (mut buffer, main_screen) =
         //     MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
-        let (mut buffer, mut main_screen) =
+        let (mut buffer, main_screen) =
             new_with_widget(dnbuffer)?;
         let (mut buffer2, mut widget2) =
             new_with_widget(dnbuffer2)?;
