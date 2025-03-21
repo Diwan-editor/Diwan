@@ -4,12 +4,12 @@ use clap::{
     Parser,
 };
 use diwan::logs::{DiwanLevelLog, DiwanLogger};
-use termwiz::surface::Change;
 use diwan::screen::pubsub::*;
 use std::{
     process::exit,
     sync::{Arc, Mutex},
 };
+use termwiz::surface::Change;
 use tokio::task;
 
 /// diwan is a rust based text editor that is fast and secure.
@@ -36,12 +36,6 @@ async fn main() -> Result<(), Error> {
         diwan_logger.setup_dn_logger()?;
 
         diwan_logger.write_to_dn_log(DiwanLevelLog::Critical, "Sorry daddy I made an error!");
-        diwan_logger.write_to_dn_log(DiwanLevelLog::Debug, "Oh yeah debug me daddy!");
-        diwan_logger.write_to_dn_log(DiwanLevelLog::Info, "Daddy inform me if you reached home!");
-        diwan_logger.write_to_dn_log(
-            DiwanLevelLog::Warn,
-            "Daddy don't be bad boy! I will tell mommy",
-        );
     } else {
         // init the a new buffered terminal
         let dnbuffer = new_buffered_term()?;
@@ -54,12 +48,9 @@ async fn main() -> Result<(), Error> {
         // and return a mutable buffer and main_screen for displaying everingthing
         // let (mut buffer, main_screen) =
         //     MainScreen::new_with_widget(dnbuffer, Arc::clone(&typed_text))?;
-        let (mut buffer, main_screen) =
-            new_with_widget(dnbuffer)?;
-        let (mut buffer2, mut widget2) =
-            new_with_widget(dnbuffer2)?;
-        let (_, mut widget3) =
-            new_with_widget(dnbuffer3)?;
+        let (mut buffer, main_screen) = new_with_widget(dnbuffer)?;
+        let (mut buffer2, mut widget2) = new_with_widget(dnbuffer2)?;
+        let (_, mut widget3) = new_with_widget(dnbuffer3)?;
 
         // set up the ui
         let shared_ui = Arc::new(Mutex::new(setup_ui()));
@@ -85,7 +76,6 @@ async fn main() -> Result<(), Error> {
             main_event_loop(&mut buffer2, &mut ui).unwrap();
         })
         .await;
-
         println!("Shutting down Normally...");
         exit(0);
     }

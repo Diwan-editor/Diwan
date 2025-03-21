@@ -15,11 +15,19 @@ use termwiz::widgets::*;
 
 use super::{Keymap, Modes, SendableUi, StatusBar};
 
-use termwiz::input::Modifiers;
+use crate::logs::DiwanLevelLog;
 use termwiz::input::KeyCode;
 use termwiz::input::KeyEvent;
-use crate::logs::DiwanLevelLog;
+use termwiz::input::Modifiers;
 
+/// function that would help to init the logger for the diwan logger should be init
+/// let dilogger = init_dilogger()?;
+/// dilogger.write_to_dn_log(level, message);
+pub fn init_dilogger() -> Result<DiwanLogger, Error> {
+    let diwan_logger = DiwanLogger::new(DiwanLevelLog::Trace)?;
+    diwan_logger.setup_dn_logger()?;
+    Ok(diwan_logger)
+}
 // is it necessary to initialize the terminal buffer before feeding it to the widget ?
 /// # new_buffered_term
 /// function that returns a `Result<BufferedTerminal<UnixTerminal>, Error>`
@@ -28,10 +36,8 @@ pub fn new_buffered_term() -> Result<BufferedTerminal<UnixTerminal>, Error> {
     let caps = Capabilities::new_from_env()?;
     let term = UnixTerminal::new(caps)?;
     let mut buffer = BufferedTerminal::new(term)?;
-
     buffer.terminal().set_raw_mode()?;
     buffer.terminal().enter_alternate_screen()?;
-
 
     Ok(buffer)
 }
@@ -65,10 +71,8 @@ pub fn new_buffered_term() -> Result<BufferedTerminal<UnixTerminal>, Error> {
 /// let (buffer, widget) = MainScreen::new_with_widget(buffer, content).unwrap();
 /// ```
 pub fn new_with_widget(
-    buffer: BufferedTerminal<UnixTerminal>
+    buffer: BufferedTerminal<UnixTerminal>,
 ) -> Result<(BufferedTerminal<UnixTerminal>, DWidget), Error> {
-
-
     let status_bar = StatusBar::default();
     let yank = Arc::new(Mutex::new(vec![]));
     let widget_id = WidgetId::new(); // maybe it's useless as well , since the widgetId is retrieved by adding it to the UI component
@@ -82,7 +86,7 @@ pub fn new_with_widget(
             cursor_y: 0,
             yank,
             status_bar,
-            widget_id
+            widget_id,
         },
     ))
 }
@@ -107,11 +111,11 @@ pub fn setup_ui() -> SendableUi<'static> {
     SendableUi::new(ui)
 }
 
-pub fn set_root(ui: &mut Ui, widget: DWidget ) -> Result<WidgetId, Error> {
+pub fn set_root(ui: &mut Ui, widget: DWidget) -> Result<WidgetId, Error> {
     Ok(ui.set_root(widget))
 }
 
-pub fn set_focus(ui: &mut Ui, widget_id: &WidgetId ){
+pub fn set_focus(ui: &mut Ui, widget_id: &WidgetId) {
     ui.set_focus(widget_id.clone());
 }
 
@@ -216,19 +220,21 @@ pub fn quit_application(buffer: &mut BufferedTerminal<impl Terminal>) {
 
 /// func that closes a buffer
 pub fn close_buffer(buffer: &mut BufferedTerminal<impl Terminal>) {
-    todo!()
+    println!("I call close buffer func is called to test func");
+    let dilogger = init_dilogger().unwrap();
+    dilogger.write_to_dn_log(DiwanLevelLog::Info, "Hello from close buffer");
 }
 
 /// why this shit dont work !
 pub fn decrease_width(buffer: &mut BufferedTerminal<impl Terminal>) {
-    let (width , height ) = buffer.dimensions();
+    let (width, height) = buffer.dimensions();
 
-   buffer.resize(width - 1, height);
+    buffer.resize(width - 1, height);
 }
 
 /// to comment well !
 pub fn increase_width(buffer: &mut BufferedTerminal<impl Terminal>) {
-    let (width , height ) = buffer.dimensions();
+    let (width, height) = buffer.dimensions();
 
-   buffer.resize(width + 1 , height);
+    buffer.resize(width + 1, height);
 }

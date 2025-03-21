@@ -1,5 +1,5 @@
 use anyhow::{Context, Error, Result};
-use log::{debug, error, info, warn, LevelFilter};
+use log::{debug, error, info, trace, warn, LevelFilter};
 use simplelog::{Color, ConfigBuilder, WriteLogger};
 use std::{
     env,
@@ -30,6 +30,8 @@ pub enum DiwanLevelLog {
     Warn,
     /// Critical errors that may cause program failure
     Critical,
+    /// trace all errors
+    Trace,
 }
 
 // TODO: write docs here
@@ -69,6 +71,7 @@ impl DiwanLogger {
             DiwanLevelLog::Info => LevelFilter::Info,
             DiwanLevelLog::Warn => LevelFilter::Warn,
             DiwanLevelLog::Critical => LevelFilter::Error,
+            DiwanLevelLog::Trace => LevelFilter::Trace,
         };
 
         Ok(Self {
@@ -107,6 +110,7 @@ impl DiwanLogger {
             DiwanLevelLog::Info => LevelFilter::Info,
             DiwanLevelLog::Warn => LevelFilter::Warn,
             DiwanLevelLog::Critical => LevelFilter::Error,
+            DiwanLevelLog::Trace => LevelFilter::Trace,
         };
 
         Ok(Self {
@@ -163,6 +167,7 @@ impl DiwanLogger {
             DiwanLevelLog::Info => info!("{}", message),
             DiwanLevelLog::Warn => warn!("{}", message),
             DiwanLevelLog::Critical => error!("{}", message),
+            DiwanLevelLog::Trace => trace!("{}", message),
         }
     }
 
