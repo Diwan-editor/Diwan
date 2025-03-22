@@ -1,0 +1,12 @@
+22-03-2025 10:42:21 [DEBUG] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:170] This is a test Debug message
+22-03-2025 10:42:21 [INFO] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] This is a test Info message
+22-03-2025 10:42:21 [WARN] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:172] This is a test Warn message
+22-03-2025 10:42:21 [ERROR] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:173] This is a test Critical message
+22-03-2025 10:42:24 [DEBUG] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:170] This is a test Debug message
+22-03-2025 10:42:24 [INFO] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] This is a test Info message
+22-03-2025 10:42:24 [WARN] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:172] This is a test Warn message
+22-03-2025 10:42:24 [ERROR] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:173] This is a test Critical message
+22-03-2025 10:42:48 [DEBUG] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:170] This is a test Debug message
+22-03-2025 10:42:48 [INFO] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] This is a test Info message
+22-03-2025 10:42:48 [WARN] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:172] This is a test Warn message
+22-03-2025 10:42:48 [ERROR] (3) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:173] This is a test Critical message

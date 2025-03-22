@@ -3,8 +3,11 @@ use clap::{
     builder::{styling::AnsiColor, Styles},
     Parser,
 };
-use diwan::logs::{DiwanLevelLog, DiwanLogger};
-use diwan::screen::pubsub::*;
+use diwan::{
+    core::utils::*,
+    logs::{DiwanLevelLog, DiwanLogger},
+};
+
 use std::{
     process::exit,
     sync::{Arc, Mutex},

@@ -2,15 +2,16 @@ use std::sync::{Arc, Mutex};
 
 use crate::keymaps::{apply_keybind, assert_cursor, assert_emptiness_content};
 use anyhow::{Error, Result as AnyResult};
-use diwan::screen::{Keymap, MainScreen, Modes};
+use diwan::screen::{Keymap, Modes};
 use termwiz::input::KeyCode;
+use diwan::core::utils::*;
 
 #[test]
 fn test_insert_mode() -> AnyResult<(), Error> {
-    let dnbuffer = MainScreen::new_buffered_term()?;
+    let dnbuffer = new_buffered_term()?;
     let content = Arc::new(Mutex::new(String::new()));
     let yank = Arc::new(Mutex::<Vec<String>>::new(vec![]));
-    let dnwidget = MainScreen::new_with_widget(dnbuffer, content.clone())?;
+    let dnwidget = new_with_widget(dnbuffer)?;
 
     let key = apply_keybind(KeyCode::Char('i'), Default::default())?;
     let action = Keymap::map_key_to_action(&key, &dnwidget.1.mode)
@@ -22,7 +23,7 @@ fn test_insert_mode() -> AnyResult<(), Error> {
     let mut mode = dnwidget.1.mode;
     Keymap::handle_action(
         action,
-        content.clone(),
+        &mut content.lock().unwrap().to_owned(),
         &mut cursor_x,
         &mut cursor_y,
         &mut mode,

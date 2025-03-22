@@ -1,17 +1,17 @@
 use std::sync::{Arc, Mutex};
 use termwiz::caps::Capabilities;
+use termwiz::cell::AttributeChange;
+use termwiz::color::{AnsiColor, ColorAttribute};
 use termwiz::input::*;
 use termwiz::surface::{Change, Position};
 use termwiz::terminal::UnixTerminal;
 use termwiz::terminal::{buffered::BufferedTerminal, Terminal};
 use termwiz::widgets::{Ui, WidgetEvent, WidgetId};
 use termwiz::Error;
-use termwiz::cell::AttributeChange;
-use termwiz::color::{AnsiColor, ColorAttribute};
 
+use super::{Keymap, Modes, StatusBar};
 use std::cmp::Ordering;
 use termwiz::widgets::*;
-use super::{Keymap, Modes, StatusBar};
 
 /// The `MainScreen` struct deals with rendering the main screen of the Diwan editor.
 #[derive(Debug, Clone)]
@@ -29,11 +29,10 @@ pub struct DWidget {
     /// History
     pub yank: Arc<Mutex<Vec<String>>>,
     /// Unique Identifier
-    pub widget_id: WidgetId
+    pub widget_id: WidgetId,
 }
 
 impl DWidget {
-
     pub fn update_status_mode(&mut self, mode: Modes) {
         self.mode = mode.clone();
         self.status_bar.status_mode = mode.clone();
@@ -43,7 +42,6 @@ impl DWidget {
         self.widget_id = id;
     }
 }
-
 
 impl Widget for DWidget {
     /// Process input events and update the screen
@@ -66,7 +64,6 @@ impl Widget for DWidget {
     /// Render the screen content, including text and the status bar
     // NOTE: the rendering of the line of numbers are multiplied idk why?
     fn render(&mut self, args: &mut RenderArgs) {
-
         // TF wrote that ? tf is text_guarded ?
         // Lock the content only briefly to access it
 

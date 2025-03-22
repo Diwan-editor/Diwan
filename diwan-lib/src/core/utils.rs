@@ -13,9 +13,9 @@ use termwiz::terminal::buffered::BufferedTerminal;
 use termwiz::terminal::{Terminal, UnixTerminal};
 use termwiz::widgets::*;
 
-use super::{Keymap, Modes, SendableUi, StatusBar};
-
 use crate::logs::DiwanLevelLog;
+use crate::screen::*;
+
 use termwiz::input::KeyCode;
 use termwiz::input::KeyEvent;
 use termwiz::input::Modifiers;

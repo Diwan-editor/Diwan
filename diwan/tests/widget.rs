@@ -1,14 +1,14 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::Error;
-use diwan::screen::{MainScreen, Modes};
+use diwan::screen::{DWidget, Modes};
 use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
+use diwan::core::utils::*;
 
-pub fn bootstrap_diwan() -> Result<(BufferedTerminal<UnixTerminal>, MainScreen), Error> {
-    let dnbuffer = MainScreen::new_buffered_term()?;
-    let content = Arc::new(Mutex::new(String::new()));
+pub fn bootstrap_diwan() -> Result<(BufferedTerminal<UnixTerminal>, DWidget), Error> {
+    let dnbuffer = new_buffered_term()?;
 
-    Ok(MainScreen::new_with_widget(dnbuffer, content.clone())?)
+    Ok(new_with_widget(dnbuffer)?)
 }
 
 #[test]
@@ -47,7 +47,7 @@ fn test_alter_content() -> Result<(), Error> {
     assert_eq!(widget.status_bar.status_mode, Modes::Normal);
 
     // altering the value
-    let random_content = "this is a content";
+    // let random_content = "this is a content"; i dont think we will need this anymore !
 
     // testing altering content
     // *content.lock().unwrap() = random_content.to_string();

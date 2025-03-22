@@ -64,14 +64,12 @@ impl Keymap {
     pub fn map_key_to_action(event: &WidgetEvent, mode: &Modes) -> Option<Actions> {
         // testing
         // if let WidgetEvent::Input(InputEvent::Key(KeyEvent {
-       //              key: KeyCode::Char(']'),
-       //              modifiers: Modifiers::ALT,
-       //          })) = event {
-       //      dbg!("hamiiid");
-       // return None;
-       //  }
-
-
+        //              key: KeyCode::Char(']'),
+        //              modifiers: Modifiers::ALT,
+        //          })) = event {
+        //      dbg!("hamiiid");
+        // return None;
+        //  }
 
         if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, .. })) = event {
             match mode {
