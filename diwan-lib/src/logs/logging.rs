@@ -3,6 +3,7 @@ use log::{debug, error, info, trace, warn, LevelFilter};
 use simplelog::{Color, ConfigBuilder, WriteLogger};
 use std::{
     env,
+    fmt::format,
     fs::{create_dir_all, File, OpenOptions},
     path::PathBuf,
 };
@@ -57,14 +58,17 @@ impl DiwanLogger {
     /// * The parent directory path is invalid
     pub fn new(levellog: DiwanLevelLog) -> Result<Self, Error> {
         // TODO : to remove this , home_dir can be infered from the pwd
-        let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
-        let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
+        // let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
+        // let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
 
         // TODO : A probing operation must be executed to check if "Diwan" is allowed to make dirs and files in the
         // purported path
-        if let Some(parent_dir) = diwan_log_path.parent() {
-            create_dir_all(parent_dir).context("couldn't create directory")?;
-        }
+        // if let Some(parent_dir) = diwan_log_path.parent() {
+        //     create_dir_all(parent_dir).context("couldn't create directory")?;
+        // }
+        // NOTE(impo): this is a temp solution for dev only
+        let di_log_path = Self::get_pwd().expect("Unable to get pwd :(");
+        let di_log_file = PathBuf::from(format!("{}/di.log", di_log_path.display()));
 
         let level = match levellog {
             DiwanLevelLog::Debug => LevelFilter::Debug,
@@ -75,7 +79,7 @@ impl DiwanLogger {
         };
 
         Ok(Self {
-            file: diwan_log_path,
+            file: di_log_file,
             level,
         })
     }
@@ -197,5 +201,25 @@ impl DiwanLogger {
             warn!("Local timezone offset could not be determined. Falling back to UTC.");
             Ok(UtcOffset::UTC)
         })
+    }
+    /// Returns the current working directory.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<PathBuf, Error>` - The current working directory as a `PathBuf`, or an error if retrieval fails.
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if the current directory cannot be retrieved.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let pwd = get_pwd().expect("Failed to get current directory");
+    /// println!("Current directory: {:?}", pwd);
+    /// ```
+    fn get_pwd() -> Result<PathBuf, Error> {
+        let pwd = env::current_dir()?;
+        Ok(pwd)
     }
 }
