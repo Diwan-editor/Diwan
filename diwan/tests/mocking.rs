@@ -2,13 +2,12 @@
 // go_right -> increase the cursor.x by 1 ( rouding in case the max width is reached )
 // go_left -> decrease the cursor.x by 1 ( rouding in case the max width is 0 )
 use anyhow::Error;
+use diwan::core::utils::*;
 use diwan::screen::DWidget;
+use diwan::screen::Modes;
 use std::sync::Arc;
 use std::sync::Mutex;
 use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
-use diwan::screen::Modes;
-use diwan::core::utils::*;
-
 
 use std::io;
 use std::io::Write;

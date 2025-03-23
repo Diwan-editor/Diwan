@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::Error;
+use diwan::core::utils::*;
 use diwan::screen::{DWidget, Modes};
 use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
-use diwan::core::utils::*;
 
 pub fn bootstrap_diwan() -> Result<(BufferedTerminal<UnixTerminal>, DWidget), Error> {
     let dnbuffer = new_buffered_term()?;

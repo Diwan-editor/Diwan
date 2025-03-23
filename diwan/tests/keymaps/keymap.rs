@@ -2,9 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use crate::keymaps::{apply_keybind, assert_cursor, assert_emptiness_content};
 use anyhow::{Error, Result as AnyResult};
+use diwan::core::utils::*;
 use diwan::screen::{Keymap, Modes};
 use termwiz::input::KeyCode;
-use diwan::core::utils::*;
 
 #[test]
 fn test_insert_mode() -> AnyResult<(), Error> {
