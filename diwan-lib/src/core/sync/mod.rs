@@ -1,2 +1,2 @@
-mod actor;
-mod command;
+pub mod actor;
+pub mod command;

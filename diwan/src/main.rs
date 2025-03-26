@@ -4,14 +4,14 @@ use clap::{
     Parser,
 };
 use diwan::{
-    core::utils::*,
-    logs::{DiwanLevelLog, DiwanLogger},
+    core::{broker::Broker, sync::command::BrokerCommand, utils::*}, logs::{DiwanLevelLog, DiwanLogger}
 };
 
 use std::{
     process::exit,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex}, thread::sleep, time::Duration,
 };
+use tokio::sync::mpsc;
 use termwiz::surface::Change;
 use tokio::task;
 
@@ -44,6 +44,7 @@ async fn main() -> Result<(), Error> {
         let dnbuffer = new_buffered_term()?;
         let dnbuffer2 = new_buffered_term()?;
         let dnbuffer3 = new_buffered_term()?;
+
         // init a mutex string for our poet :)
         // potentially no need
         //let typed_text = Arc::new(Mutex::new(String::new()));
@@ -77,11 +78,19 @@ async fn main() -> Result<(), Error> {
             // enter the main loop
             main_event_loop(&mut buffer, &mut ui).unwrap();
             main_event_loop(&mut buffer2, &mut ui).unwrap();
-        })
-        .await;
-        println!("Shutting down Normally...");
+        }).await;
+
+        // exp
+
+        let (tx, mut rx) = mpsc::channel::<BrokerCommand>(32);
+        let mut main_broker  = Broker::new(rx).await;
+        // main_broker.receiver = rx.into();
+        sleep(Duration::from_millis(3000));
+        tx.send(BrokerCommand::GetBuffers).await.unwrap();
+        // dbg!(main_broker.await.get_buffers());
         exit(0);
     }
+    println!("Shutting down Normally...");
     Ok(())
 }
 

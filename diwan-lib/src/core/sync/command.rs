@@ -11,10 +11,10 @@ pub enum Command {
 
 pub enum BrokerCommand {
     Mes(u8, CommandField, String),
-    SpawnFrame,
-    GetBuffers,
-    AddBuffer(BufferedTerminal<UnixTerminal>),
-    SignalExit(u8),
+    SpawnFrame(u8), // ✅
+    GetBuffers,// ✅
+    AddBuffer(BufferedTerminal<UnixTerminal>), // ✅
+    SignalExit(u8), // ✅
 }
 
 pub enum CommandField {
