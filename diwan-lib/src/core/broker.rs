@@ -1,13 +1,15 @@
+use std::future::IntoFuture;
+
 use tokio::{sync::mpsc::Receiver, sync::mpsc::Sender};
 
+use super::sync::command::BrokerCommand;
 use anyhow::Error;
 use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
-use super::sync::command::BrokerCommand;
 
 /// this file will be used to define the broker that will manage the processes
 ///
 
-pub struct Broker<'a >{
+pub struct Broker<'a> {
     // u8 here is basically an id
     // does using the tuple here wont trigger an error ? is it Sized ?
     buffers: Vec<(u8, &'a BufferedTerminal<UnixTerminal>)>,
@@ -18,41 +20,29 @@ pub struct Broker<'a >{
 }
 
 impl<'a> Broker<'a> {
-    pub async fn new(mut broker_receiver: Receiver<BrokerCommand>) -> Self {
+    pub async fn new(mut broker_receiver: Receiver<BrokerCommand>) {
+        let mut broker = Self {
+            buffers: Vec::new(),
+            senders: Vec::new(),
+            receiver: broker_receiver.into(),
+            active_buffer: 1,
+        };
 
-        // tokio::spawn(async {
-        //     let mut broker = Self {
-        //         buffers: Vec::new(),
-        //         senders: Vec::new(),
-        //         receiver: broker_receiver.into(),
-        //         active_buffer: 1,
-        //     };
-
-            loop {
-                //broker.handle_command().await;
-                if let Some(command) = broker_receiver.recv().await {
-                    match command {
-                        BrokerCommand::GetBuffers =>
-                            println!("matched"),
-                        _ =>
-                            println!("something else "),
-                    }
-                }
-            }
-
-//}).await.unwrap()
+        loop {
+            broker.handle_command().await;
+        }
     }
 
     async fn handle_command(&mut self) {
         let receiver = self.receiver.as_mut().unwrap();
 
-        println!("Inside handle_command");
         if let Some(command) = receiver.recv().await {
             match command {
-                BrokerCommand::GetBuffers =>
-                    println!("matched"),
-                _ =>
-            println!("something else "),
+                BrokerCommand::GetBuffers => println!("matched, GETBUFFERS"),
+                BrokerCommand::Mes(_id, _, _text) => {
+                    println!("matched, MES");
+                }
+                _ => println!("something else "),
             }
         }
     }
@@ -75,15 +65,15 @@ impl<'a> Broker<'a> {
     }
 
     pub fn get_buffers(&self) -> Result<&'a Vec<(u8, &BufferedTerminal<UnixTerminal>)>, Error> {
-
         Ok(&self.buffers)
     }
 
     pub fn spawn_frame(&self, buffer_id: u8) -> Result<u8, Error> {
-        self
-            .buffers
+        self.buffers
             .iter()
             .any(|buf| buf.0 == buffer_id)
-            .then(|| todo!() ).or(None).expect("TODO")
+            .then(|| todo!())
+            .or(None)
+            .expect("TODO")
     }
 }

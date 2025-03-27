@@ -197,6 +197,7 @@ pub fn main_event_loop(
                     continue;
                 }
                 // Other inputs are queued as widget events
+                // TODO how can we pass the buf object to the otehr side ?
                 other_input => {
                     ui.queue_event(WidgetEvent::Input(other_input));
                 }

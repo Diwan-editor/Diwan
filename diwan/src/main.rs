@@ -4,16 +4,23 @@ use clap::{
     Parser,
 };
 use diwan::{
-    core::{broker::Broker, sync::command::BrokerCommand, utils::*}, logs::{DiwanLevelLog, DiwanLogger}
+    core::{
+        broker::Broker,
+        sync::command::{BrokerCommand, CommandField},
+        utils::*,
+    },
+    logs::{DiwanLevelLog, DiwanLogger},
 };
 
 use std::{
     process::exit,
-    sync::{Arc, Mutex}, thread::sleep, time::Duration,
+    sync::{Arc, Mutex},
+    thread::sleep,
+    time::Duration,
 };
-use tokio::sync::mpsc;
 use termwiz::surface::Change;
 use tokio::task;
+use tokio::{spawn, sync::mpsc};
 
 /// diwan is a rust based text editor that is fast and secure.
 #[derive(Parser, Debug)]
@@ -44,6 +51,10 @@ async fn main() -> Result<(), Error> {
         let dnbuffer = new_buffered_term()?;
         let dnbuffer2 = new_buffered_term()?;
         let dnbuffer3 = new_buffered_term()?;
+        // works !
+        // if i didn't specify the await here , how / when it's awaited ?
+        let (tx, rx) = mpsc::channel::<BrokerCommand>(32);
+        tokio::spawn(Broker::new(rx));
 
         // init a mutex string for our poet :)
         // potentially no need
@@ -77,17 +88,21 @@ async fn main() -> Result<(), Error> {
             buffer2.add_change(Change::Title("this is another dumb title".to_owned()));
             // enter the main loop
             main_event_loop(&mut buffer, &mut ui).unwrap();
-            main_event_loop(&mut buffer2, &mut ui).unwrap();
-        }).await;
+            // main_event_loop(&mut buffer2, &mut ui).unwrap();
+        })
+        .await;
 
-        // exp
 
-        let (tx, mut rx) = mpsc::channel::<BrokerCommand>(32);
-        let mut main_broker  = Broker::new(rx).await;
-        // main_broker.receiver = rx.into();
-        sleep(Duration::from_millis(3000));
         tx.send(BrokerCommand::GetBuffers).await.unwrap();
-        // dbg!(main_broker.await.get_buffers());
+        tx.send(BrokerCommand::GetBuffers).await.unwrap();
+        tx.clone()
+          .send(BrokerCommand::Mes(
+              12,
+              CommandField::Regular,
+              "test_comm".to_owned(),
+          ))
+          .await
+          .unwrap();
         exit(0);
     }
     println!("Shutting down Normally...");

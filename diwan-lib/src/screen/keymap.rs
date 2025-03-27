@@ -48,6 +48,8 @@ pub enum Actions {
     NewLine,
     /// Paste a string from the clipboard
     Paste(String),
+    /// TODO: [Experimental] decreasing buf width
+    DecreaseBufWidth,
 }
 
 impl Keymap {
@@ -62,17 +64,10 @@ impl Keymap {
     ///
     /// An `Option<Actions>` indicating the mapped action, or `None` if no action is mapped.
     pub fn map_key_to_action(event: &WidgetEvent, mode: &Modes) -> Option<Actions> {
-        // testing
-        // if let WidgetEvent::Input(InputEvent::Key(KeyEvent {
-        //              key: KeyCode::Char(']'),
-        //              modifiers: Modifiers::ALT,
-        //          })) = event {
-        //      dbg!("hamiiid");
-        // return None;
-        //  }
-
-        if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, .. })) = event {
+        if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, modifiers })) = event {
             match mode {
+                Modes::Normal | Modes::Insert if *modifiers == Modifiers::ALT && *key == KeyCode::Char(']') =>
+                    Some(Actions::DecreaseBufWidth),
                 Modes::Normal => match key {
                     KeyCode::Char('h') | KeyCode::LeftArrow => Some(Actions::MoveLeft),
                     KeyCode::Char('j') | KeyCode::DownArrow => Some(Actions::MoveDown),
@@ -117,8 +112,7 @@ impl Keymap {
         mode: &mut Modes,
         yank: Arc<Mutex<Vec<String>>>,
     ) {
-        let mut content_guard = content;
-        let lines: Vec<&str> = content_guard.lines().collect();
+        let lines: Vec<&str> = content.lines().collect();
 
         match action {
             Actions::MoveLeft => Self::move_cursor_left(cursor_x, cursor_y, &lines),
@@ -134,6 +128,7 @@ impl Keymap {
                 Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard)
             }
             Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
+            Actions::DecreaseBufWidth => todo!()
         }
     }
     /// Inserts a character at the cursor position.
@@ -260,3 +255,4 @@ impl Default for Modes {
         Modes::Normal
     }
 }
+
