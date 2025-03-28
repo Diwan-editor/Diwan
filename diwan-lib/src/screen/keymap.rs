@@ -66,8 +66,11 @@ impl Keymap {
     pub fn map_key_to_action(event: &WidgetEvent, mode: &Modes) -> Option<Actions> {
         if let WidgetEvent::Input(InputEvent::Key(KeyEvent { key, modifiers })) = event {
             match mode {
-                Modes::Normal | Modes::Insert if *modifiers == Modifiers::ALT && *key == KeyCode::Char(']') =>
-                    Some(Actions::DecreaseBufWidth),
+                Modes::Normal | Modes::Insert
+                    if *modifiers == Modifiers::ALT && *key == KeyCode::Char(']') =>
+                {
+                    Some(Actions::DecreaseBufWidth)
+                }
                 Modes::Normal => match key {
                     KeyCode::Char('h') | KeyCode::LeftArrow => Some(Actions::MoveLeft),
                     KeyCode::Char('j') | KeyCode::DownArrow => Some(Actions::MoveDown),
@@ -106,7 +109,7 @@ impl Keymap {
     /// - `mode`: Mutable reference to the current mode.
     pub fn handle_action(
         action: Actions,
-        content: &mut String,
+        mut content: &mut String,
         cursor_x: &mut usize,
         cursor_y: &mut usize,
         mode: &mut Modes,
@@ -119,16 +122,16 @@ impl Keymap {
             Actions::MoveRight => Self::move_cursor_right(cursor_x, cursor_y, &lines),
             Actions::MoveUp => Self::move_cursor_up(cursor_x, cursor_y, &lines),
             Actions::MoveDown => Self::move_cursor_down(cursor_x, cursor_y, &lines),
-            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content_guard),
+            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content),
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
-            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content_guard),
+            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content),
             Actions::Paste(pasted_string) => {
                 Self::persists_string_in_yank(&pasted_string, yank);
-                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content_guard)
+                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content)
             }
-            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content_guard),
-            Actions::DecreaseBufWidth => todo!()
+            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content),
+            Actions::DecreaseBufWidth => todo!(),
         }
     }
     /// Inserts a character at the cursor position.
@@ -255,4 +258,3 @@ impl Default for Modes {
         Modes::Normal
     }
 }
-

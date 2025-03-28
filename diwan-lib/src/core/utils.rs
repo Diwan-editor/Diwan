@@ -144,10 +144,6 @@ pub fn main_event_loop(
         // dont need maybe ?
         buf.flush()?;
 
-        // much check if the buf selected is in focus !
-        // but how to do that ?
-        // buf.add_change(Change::Title("title".to_owned()));
-
         // testing assigning the ascii code for `closing brackets` manually
         // let closing_brackets = char::from_u32(135).unwrap();
         // 👆something's clearly not ok with targeting this
@@ -173,7 +169,7 @@ pub fn main_event_loop(
                     key: KeyCode::Char('x'),
                     modifiers: Modifiers::CTRL,
                 }) => {
-                    close_buffer(buf);
+                    // close_buffer(buf);
                     break;
                 }
                 // Quit on Alt+Q
@@ -219,10 +215,11 @@ pub fn quit_application(buffer: &mut BufferedTerminal<impl Terminal>) {
     }
 }
 
+// TODO: perhapse the logging facility must be an async task as well !
 /// func that closes a buffer
 pub fn close_buffer(buffer: &mut BufferedTerminal<impl Terminal>) {
     println!("I call close buffer func is called to test func");
-    let dilogger = init_dilogger().unwrap();
+    let dilogger = init_dilogger().unwrap(); // TODO: [FIX] generates an error upon second call
     dilogger.write_to_dn_log(DiwanLevelLog::Info, "Hello from close buffer");
 }
 

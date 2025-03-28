@@ -92,17 +92,16 @@ async fn main() -> Result<(), Error> {
         })
         .await;
 
-
         tx.send(BrokerCommand::GetBuffers).await.unwrap();
         tx.send(BrokerCommand::GetBuffers).await.unwrap();
         tx.clone()
-          .send(BrokerCommand::Mes(
-              12,
-              CommandField::Regular,
-              "test_comm".to_owned(),
-          ))
-          .await
-          .unwrap();
+            .send(BrokerCommand::Mes(
+                12,
+                CommandField::Regular,
+                "test_comm".to_owned(),
+            ))
+            .await
+            .unwrap();
         exit(0);
     }
     println!("Shutting down Normally...");
