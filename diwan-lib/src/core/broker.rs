@@ -2,9 +2,14 @@ use std::future::IntoFuture;
 
 use tokio::{sync::mpsc::Receiver, sync::mpsc::Sender};
 
+use crate::screen::DWidget;
+
 use super::sync::command::BrokerCommand;
 use anyhow::Error;
-use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
+use termwiz::{
+    terminal::{buffered::BufferedTerminal, UnixTerminal},
+    widgets,
+};
 
 /// this file will be used to define the broker that will manage the processes
 ///
@@ -12,15 +17,15 @@ use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
 pub struct Broker<'a> {
     // u8 here is basically an id
     // does using the tuple here wont trigger an error ? is it Sized ?
-    buffers: Vec<(u8, &'a BufferedTerminal<UnixTerminal>)>,
-    pub receiver: Option<Receiver<BrokerCommand>>,
-    pub senders: Vec<(u8, Sender<BrokerCommand>)>,
+    buffers: Vec<(u8, &'a BufferedTerminal<UnixTerminal>, DWidget)>,
+    pub receiver: Option<Receiver<BrokerCommand<'a>>>,
+    pub senders: Vec<(u8, Sender<BrokerCommand<'a>>)>,
     /// id of the active buffer
     active_buffer: u8,
 }
 
 impl<'a> Broker<'a> {
-    pub async fn new(mut broker_receiver: Receiver<BrokerCommand>) {
+    pub async fn new(mut broker_receiver: Receiver<BrokerCommand<'a>>) {
         let mut broker = Self {
             buffers: Vec::new(),
             senders: Vec::new(),
@@ -33,21 +38,39 @@ impl<'a> Broker<'a> {
         }
     }
 
+    // TODO: i should define later a union of Command types
     async fn handle_command(&mut self) {
         let receiver = self.receiver.as_mut().unwrap();
 
         if let Some(command) = receiver.recv().await {
             match command {
-                BrokerCommand::GetBuffers => println!("matched, GETBUFFERS"),
+                BrokerCommand::GetBuffers(sender_id) => {
+                    let buffers = self.get_buffers().unwrap();
+                    let sender_tx = self.get_sender(sender_id).unwrap();
+                    sender_tx.send(BrokerCommand::OkBuffers(buffers.clone()));
+                }
                 BrokerCommand::Mes(_id, _, _text) => {
                     println!("matched, MES");
                 }
-                _ => println!("something else "),
+                //BrokerCommand::SpawnBuffer(id) => todo!(),
+                BrokerCommand::AddBuffer(sender_id, (buffered_terminal, widget)) => {
+                    let new_buffer_id: u8 = self.add_buffer(buffered_terminal, widget).unwrap();
+                    let sender_tx = self.get_sender(sender_id).unwrap();
+                    sender_tx.send(BrokerCommand::Ok(new_buffer_id));
+                }
+                BrokerCommand::SignalExit(id) => todo!(),
+                other => {
+                    println!("other non implemented stuffs ");
+                }
             }
         }
     }
 
-    pub fn add_buffer(&mut self, buf: &'a BufferedTerminal<UnixTerminal>) -> Result<u8, Error> {
+    pub fn add_buffer(
+        &mut self,
+        buf: &'a BufferedTerminal<UnixTerminal>,
+        widget: DWidget,
+    ) -> Result<u8, Error> {
         let max_id: u8 = self
             .buffers
             .iter()
@@ -55,7 +78,7 @@ impl<'a> Broker<'a> {
             .reduce(|acc, x| if acc <= x { x } else { acc })
             .unwrap_or(self.buffers.last().unwrap().0);
 
-        self.buffers.push((max_id.clone() + 1, buf));
+        self.buffers.push((max_id.clone() + 1, buf, widget));
         Ok(max_id)
     }
 
@@ -64,7 +87,9 @@ impl<'a> Broker<'a> {
         todo!();
     }
 
-    pub fn get_buffers(&self) -> Result<&'a Vec<(u8, &BufferedTerminal<UnixTerminal>)>, Error> {
+    pub fn get_buffers(
+        &self,
+    ) -> Result<&'a Vec<(u8, &BufferedTerminal<UnixTerminal>, DWidget)>, Error> {
         Ok(&self.buffers)
     }
 
@@ -75,5 +100,15 @@ impl<'a> Broker<'a> {
             .then(|| todo!())
             .or(None)
             .expect("TODO")
+    }
+
+    fn get_sender(&self, sender_id: u8) -> Result<Sender<BrokerCommand>, Error> {
+        Ok(self
+            .senders
+            .iter()
+            .find(|&item| item.0 == sender_id)
+            .unwrap()
+            .1
+            .clone()) // how to combine this two dumb operators `?` and .1 ( for tuples )
     }
 }

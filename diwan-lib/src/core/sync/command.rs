@@ -1,5 +1,7 @@
 use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
 
+use crate::screen::DWidget;
+
 pub trait Message {}
 
 pub enum Command {
@@ -9,12 +11,14 @@ pub enum Command {
     SignalExit(u8),
 }
 
-pub enum BrokerCommand {
+pub enum BrokerCommand<'a> {
     Mes(u8, CommandField, String),
-    SpawnFrame(u8),                            // ✅
-    GetBuffers,                                // ✅
-    AddBuffer(BufferedTerminal<UnixTerminal>), // ✅
-    SignalExit(u8),                            // ✅
+    // SpawnBuffer(u8),// ✅ the u8 field is for the id of the adequate frame ( to identify who send what !  )
+    GetBuffers(u8),                                               // ✅
+    AddBuffer(u8, (&'a BufferedTerminal<UnixTerminal>, DWidget)), // ✅
+    SignalExit(u8),
+    Ok(u8),                                                            // ✅
+    OkBuffers(Vec<(u8, &'a BufferedTerminal<UnixTerminal>, DWidget)>), // can i do that ?
 }
 
 pub enum CommandField {
@@ -24,6 +28,6 @@ pub enum CommandField {
     SpawnFrame,
 }
 
-impl Message for Command {}
-impl Message for CommandField {}
-impl Message for BrokerCommand {}
+// impl Message for Command {}
+// impl Message for CommandField {}
+// impl Message for BrokerCommand {}
