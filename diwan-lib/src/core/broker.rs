@@ -25,7 +25,8 @@ pub struct Broker<'a> {
 }
 
 impl<'a> Broker<'a> {
-    pub async fn new(mut broker_receiver: Receiver<BrokerCommand<'a>>) {
+    // unused mut
+    pub async fn new(broker_receiver: Receiver<BrokerCommand<'a>>) {
         let mut broker = Self {
             buffers: Vec::new(),
             senders: Vec::new(),
