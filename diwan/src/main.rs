@@ -1,3 +1,4 @@
+mod utils;
 use anyhow::{Error, Result};
 use clap::{
     builder::{styling::AnsiColor, Styles},
@@ -21,10 +22,11 @@ use std::{
 use termwiz::surface::Change;
 use tokio::task;
 use tokio::{spawn, sync::mpsc};
+use utils::dn_cli_colored;
 
 /// diwan is a rust based text editor that is fast and secure.
 #[derive(Parser, Debug)]
-#[command(version = env!("CARGO_PKG_VERSION"), author = env!("CARGO_PKG_AUTHORS"), about = env!("CARGO_PKG_DESCRIPTION"),styles = handle_cli_help_color())]
+#[command(version = env!("CARGO_PKG_VERSION"), author = env!("CARGO_PKG_AUTHORS"), about = env!("CARGO_PKG_DESCRIPTION"),styles = dn_cli_colored() )]
 struct DiwanArgs {
     /// load the user manual
     #[arg(short, long)]
@@ -109,13 +111,3 @@ async fn main() -> Result<(), Error> {
 }
 
 // style help of diwan cli
-fn handle_cli_help_color() -> Styles {
-    Styles::styled()
-        .usage(AnsiColor::BrightBlue.on_default())
-        .header(AnsiColor::BrightYellow.on_default())
-        .literal(AnsiColor::BrightMagenta.on_default())
-        .invalid(AnsiColor::BrightRed.on_default())
-        .error(AnsiColor::BrightRed.on_default())
-        .valid(AnsiColor::BrightWhite.on_default())
-        .placeholder(AnsiColor::BrightBlue.on_default())
-}
