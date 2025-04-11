@@ -40,102 +40,94 @@ pub enum DiwanLevelLog {
 // privilege that wont let it create log files !
 
 impl DiwanLogger {
-    /// Creates a new DiwanLogger instance with the specified log level.
+    /// Creates a new `DiwanLogger` instance that stores log files in the system's cache directory.
     ///
     /// # Arguments
     ///
-    /// * `levellog` - The desired logging level for the logger
+    /// * `levellog` - The desired logging level for the logger instance.
     ///
     /// # Returns
     ///
-    /// * `Result<Self, Error>` - A new logger instance or an error if initialization fails
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if:
-    /// * The HOME environment variable is not set
-    /// * The log directory cannot be created
-    /// * The parent directory path is invalid
-    pub fn new(levellog: DiwanLevelLog) -> Result<Self, Error> {
-        // TODO : to remove this , home_dir can be infered from the pwd
-        // let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
-        // let diwan_log_path = PathBuf::from(format!("{}/.cache/diwan/diwan.log", home_dir));
+    /// A `Result` containing the initialized `DiwanLogger` or an `Error` if the cache directory could not be determined
+    /// or created.
+    pub fn new(levellog: DiwanLevelLog) -> Result<Self> {
+        let cache_dir = dirs::cache_dir()
+            .context("Failed to determine cache directory")?
+            .join("diwan");
 
-        // TODO : A probing operation must be executed to check if "Diwan" is allowed to make dirs and files in the
-        // purported path
-        // if let Some(parent_dir) = diwan_log_path.parent() {
-        //     create_dir_all(parent_dir).context("couldn't create directory")?;
-        // }
-        // NOTE(impo): this is a temp solution for dev only
-        let di_log_path = Self::get_pwd().expect("Unable to get pwd :(");
-        let di_log_file = PathBuf::from(format!("{}/di.log", di_log_path.display()));
-
-        let level = match levellog {
-            DiwanLevelLog::Debug => LevelFilter::Debug,
-            DiwanLevelLog::Info => LevelFilter::Info,
-            DiwanLevelLog::Warn => LevelFilter::Warn,
-            DiwanLevelLog::Critical => LevelFilter::Error,
-            DiwanLevelLog::Trace => LevelFilter::Trace,
-        };
-
-        Ok(Self {
-            file: di_log_file,
-            level,
-        })
+        Self::create_logger(levellog, cache_dir.join("di.log"))
     }
 
-    /// Creates a new DiwanLogger instance with the specified log level.
+    /// Creates a new `DiwanLogger` instance that stores log files in the current working directory.
+    ///
+    /// This can be used for development or debugging sessions where file access is restricted to the local project folder.
     ///
     /// # Arguments
     ///
-    /// * `levellog` - The desired logging level for the logger
+    /// * `levellog` - The desired logging level for the logger instance.
     ///
     /// # Returns
     ///
-    /// * `Result<Self, Error>` - A new logger instance or an error if initialization fails
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if:
-    /// * The log directory cannot be created
-    pub fn new_local(levellog: DiwanLevelLog) -> Result<Self, Error> {
-        // TODO : to remove this , home_dir can be infered from the pwd
-        let home_dir = env::var("HOME").context("Couldn't retrieve HOME environment variable")?;
-        let diwan_log_path = PathBuf::from("./");
+    /// A `Result` containing the initialized `DiwanLogger` or an `Error` if the current directory could not be determined.
+    pub fn new_local(levellog: DiwanLevelLog) -> Result<Self> {
+        let current_dir = env::current_dir().context("Failed to determine current directory")?;
 
-        // TODO : A probing operation must be executed to check if "Diwan" is allowed to make dirs and files in the
-        // purported path
-        if let Some(parent_dir) = diwan_log_path.parent() {
-            create_dir_all(parent_dir).context("couldn't create directory")?;
+        Self::create_logger(levellog, current_dir.join("di.log"))
+    }
+
+    /// Initializes the logger with the provided logging level and log file path.
+    ///
+    /// This internal helper function is shared by both `new` and `new_local` constructors.
+    ///
+    /// # Arguments
+    ///
+    /// * `levellog` - The desired logging level.
+    /// * `log_path` - The full path where the log file should be stored.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` with a configured `DiwanLogger` or an error if the log directory could not be created.
+    #[inline]
+    fn create_logger(levellog: DiwanLevelLog, log_path: PathBuf) -> Result<Self> {
+        if let Some(parent) = log_path.parent() {
+            create_dir_all(parent).context("Failed to create log directory")?;
         }
 
-        let level = match levellog {
+        Ok(Self {
+            file: log_path,
+            level: Self::map_level(levellog),
+        })
+    }
+
+    /// Maps the custom `DiwanLevelLog` enum to the standard `LevelFilter` used by the `log` crate.
+    ///
+    /// # Arguments
+    ///
+    /// * `level` - The custom log level to map.
+    ///
+    /// # Returns
+    ///
+    /// A `LevelFilter` representing the equivalent standard log level.
+    #[inline]
+    fn map_level(level: DiwanLevelLog) -> LevelFilter {
+        match level {
             DiwanLevelLog::Debug => LevelFilter::Debug,
             DiwanLevelLog::Info => LevelFilter::Info,
             DiwanLevelLog::Warn => LevelFilter::Warn,
             DiwanLevelLog::Critical => LevelFilter::Error,
             DiwanLevelLog::Trace => LevelFilter::Trace,
-        };
-
-        Ok(Self {
-            file: diwan_log_path,
-            level,
-        })
+        }
     }
 
-    /// Initializes the logging system with custom configuration and file output.
+    /// Configures and initializes the logging system using `simplelog` with color and formatting options.
     ///
-    /// Sets up a configured logger with:
-    /// * Custom time format
-    /// * Color-coded output for different log levels
-    /// * Local timezone support
-    /// * Filtered logging for "diwan" and "dn" modules
+    /// This sets up the logger to write to the file specified in the `DiwanLogger` instance, with time stamps,
+    /// color-coded levels, and filtering for Diwan-specific logs.
     ///
     /// # Returns
     ///
-    /// * `Result<(), Error>` - Success or an error if logger initialization fails
-    pub fn setup_dn_logger(&self) -> Result<(), Error> {
-        let local_offset = Self::get_local_time()?;
+    /// A `Result` indicating success or failure of logger initialization.
+    pub fn setup_dn_logger(&self) -> Result<()> {
         let config = ConfigBuilder::new()
             .add_filter_allow_str("diwan")
             .add_filter_allow_str("dn")
@@ -149,22 +141,26 @@ impl DiwanLogger {
             .set_time_format_custom(format_description!(
                 "[day]-[month]-[year] [hour repr:12]:[minute]:[second]"
             ))
-            .set_time_offset(local_offset)
+            .set_time_offset(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC))
             .build();
 
-        let log_file = self.create_log_file()?;
+        let log_file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.file)
+            .context(format!("Failed to open log file: {:?}", self.file))?;
 
-        WriteLogger::init(self.level, config, log_file).context("Failed to initialize logger")?;
+        WriteLogger::init(self.level, config, log_file).context("Logger initialization failed")?;
 
         Ok(())
     }
 
-    /// Writes a message to the log file with the specified log level.
+    /// Writes a single log message to the configured logger at the specified log level.
     ///
     /// # Arguments
     ///
-    /// * `level` - The log level to use for the message
-    /// * `message` - The message to write to the log
+    /// * `level` - The logging level at which the message should be recorded.
+    /// * `message` - The log message to write.
     pub fn write_to_dn_log(&self, level: DiwanLevelLog, message: &str) {
         match level {
             DiwanLevelLog::Debug => debug!("{}", message),
@@ -173,53 +169,5 @@ impl DiwanLogger {
             DiwanLevelLog::Critical => error!("{}", message),
             DiwanLevelLog::Trace => trace!("{}", message),
         }
-    }
-
-    /// Creates or opens the log file in append mode.
-    ///
-    /// # Returns
-    ///
-    /// * `Result<File, Error>` - The opened file handle or an error if the operation fails
-    fn create_log_file(&self) -> Result<File, Error> {
-        OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&self.file)
-            .context(format!(
-                "Failed to create or open log file at {:?}",
-                self.file
-            ))
-    }
-
-    /// Attempts to get the local timezone offset, falling back to UTC if unsuccessful.
-    ///
-    /// # Returns
-    ///
-    /// * `Result<UtcOffset, Error>` - The local timezone offset or UTC if local offset cannot be determined
-    fn get_local_time() -> Result<UtcOffset, time::error::Error> {
-        UtcOffset::current_local_offset().or_else(|_| {
-            warn!("Local timezone offset could not be determined. Falling back to UTC.");
-            Ok(UtcOffset::UTC)
-        })
-    }
-    /// Returns the current working directory.
-    ///
-    /// # Returns
-    ///
-    /// * `Result<PathBuf, Error>` - The current working directory as a `PathBuf`, or an error if retrieval fails.
-    ///
-    /// # Errors
-    ///
-    /// This function returns an error if the current directory cannot be retrieved.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// let pwd = get_pwd().expect("Failed to get current directory");
-    /// println!("Current directory: {:?}", pwd);
-    /// ```
-    fn get_pwd() -> Result<PathBuf, Error> {
-        let pwd = env::current_dir()?;
-        Ok(pwd)
     }
 }

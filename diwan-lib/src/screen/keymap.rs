@@ -48,7 +48,7 @@ pub enum Actions {
     NewLine,
     /// Paste a string from the clipboard
     Paste(String),
-    /// TODO: [Experimental] decreasing buf width
+    /// TODO: (Experimental) decreasing buf width
     DecreaseBufWidth,
 }
 
