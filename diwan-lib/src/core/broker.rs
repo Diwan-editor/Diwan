@@ -5,7 +5,7 @@ use tokio::{sync::mpsc::Receiver, sync::mpsc::Sender};
 use crate::screen::DWidget;
 
 use super::sync::command::BrokerCommand;
-use anyhow::Error;
+use anyhow::{anyhow, Error};
 use termwiz::{
     terminal::{buffered::BufferedTerminal, UnixTerminal},
     widgets,
@@ -26,6 +26,7 @@ pub struct Broker<'a> {
 
 impl<'a> Broker<'a> {
     // unused mut
+    // NOTE(rename): in case the new function doesn't return a value or Self better to name it run then!
     pub async fn new(broker_receiver: Receiver<BrokerCommand<'a>>) {
         let mut broker = Self {
             buffers: Vec::new(),
@@ -103,13 +104,11 @@ impl<'a> Broker<'a> {
             .expect("TODO")
     }
 
-    fn get_sender(&self, sender_id: u8) -> Result<Sender<BrokerCommand>, Error> {
-        Ok(self
-            .senders
+    fn get_sender(&self, sender_id: u8) -> Result<Sender<BrokerCommand<'a>>, Error> {
+        self.senders
             .iter()
-            .find(|&item| item.0 == sender_id)
-            .unwrap()
-            .1
-            .clone()) // how to combine this two dumb operators `?` and .1 ( for tuples )
+            .find(|item| item.0 == sender_id)
+            .map(|item| item.1.clone())
+            .ok_or_else(|| anyhow!("Sender not found"))
     }
 }
