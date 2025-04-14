@@ -1,3 +1,5 @@
+use clap::builder::{styling::AnsiColor, Styles};
+
 // coloring the cli
 pub fn dn_cli_colored() -> Styles {
     Styles::styled()

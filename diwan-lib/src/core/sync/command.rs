@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
 
 use crate::screen::DWidget;
@@ -11,14 +13,14 @@ pub enum Command {
     SignalExit(u8),
 }
 
-pub enum BrokerCommand<'a> {
+pub enum BrokerCommand {
     Mes(u8, CommandField, String),
     // SpawnBuffer(u8),// ✅ the u8 field is for the id of the adequate frame ( to identify who send what !  )
-    GetBuffers(u8),                                               // ✅
-    AddBuffer(u8, (&'a BufferedTerminal<UnixTerminal>, DWidget)), // ✅
+    GetBuffers(u8),                                           // ✅
+    AddBuffer(u8, (BufferedTerminal<UnixTerminal>, DWidget)), // ✅
     SignalExit(u8),
-    Ok(u8),                                                            // ✅
-    OkBuffers(Vec<(u8, &'a BufferedTerminal<UnixTerminal>, DWidget)>), // can i do that ?
+    Ok(u8), // ✅
+    OkBuffers(Vec<(u8, Arc<BufferedTerminal<UnixTerminal>>, DWidget)>),
 }
 
 pub enum CommandField {

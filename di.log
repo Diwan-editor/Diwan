@@ -1,8 +1,1 @@
-28-03-2025 04:15:01 [INFO] (4) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] Hello from close buffer
-28-03-2025 04:15:32 [INFO] (9) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] Hello from close buffer
-28-03-2025 04:15:39 [INFO] (9) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] Hello from close buffer
-28-03-2025 04:15:59 [INFO] (8) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] Hello from close buffer
-28-03-2025 04:16:03 [WARN] (8) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:201] Local timezone offset could not be determined. Falling back to UTC.
-28-03-2025 04:16:29 [INFO] (9) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:171] Hello from close buffer
-28-03-2025 04:16:30 [WARN] (9) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:201] Local timezone offset could not be determined. Falling back to UTC.
-28-03-2025 04:16:59 [WARN] (9) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:201] Local timezone offset could not be determined. Falling back to UTC.
+14-04-2025 02:06:19 [ERROR] (1) diwan_lib::logs::logging: [diwan-lib/src/logs/logging.rs:169] Sorry daddy I made an error!

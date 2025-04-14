@@ -20,7 +20,7 @@ all: build
 # Build the project
 build:
 	@echo -e "$(CYAN)Building the project in release mode...$(RESET)"
-	@cargo build --release
+	@cargo build --release --timings
 	@echo -e "$(GREEN)Build complete!$(RESET)"
 
 # Run the project (debug mode by default)

@@ -1,4 +1,4 @@
-use std::future::IntoFuture;
+use std::{future::IntoFuture, sync::Arc};
 
 use tokio::{sync::mpsc::Receiver, sync::mpsc::Sender};
 
@@ -12,22 +12,20 @@ use termwiz::{
 };
 
 /// this file will be used to define the broker that will manage the processes
-///
-
-pub struct Broker<'a> {
+pub struct Broker {
     // u8 here is basically an id
     // does using the tuple here wont trigger an error ? is it Sized ?
-    buffers: Vec<(u8, &'a BufferedTerminal<UnixTerminal>, DWidget)>,
-    pub receiver: Option<Receiver<BrokerCommand<'a>>>,
-    pub senders: Vec<(u8, Sender<BrokerCommand<'a>>)>,
+    buffers: Vec<(u8, Arc<BufferedTerminal<UnixTerminal>>, DWidget)>,
+    pub receiver: Option<Receiver<BrokerCommand>>,
+    pub senders: Vec<(u8, Sender<BrokerCommand>)>,
     /// id of the active buffer
     active_buffer: u8,
 }
 
-impl<'a> Broker<'a> {
+impl Broker {
     // unused mut
     // NOTE(rename): in case the new function doesn't return a value or Self better to name it run then!
-    pub async fn new(broker_receiver: Receiver<BrokerCommand<'a>>) {
+    pub async fn new(broker_receiver: Receiver<BrokerCommand>) {
         let mut broker = Self {
             buffers: Vec::new(),
             senders: Vec::new(),
@@ -49,7 +47,10 @@ impl<'a> Broker<'a> {
                 BrokerCommand::GetBuffers(sender_id) => {
                     let buffers = self.get_buffers().unwrap();
                     let sender_tx = self.get_sender(sender_id).unwrap();
-                    sender_tx.send(BrokerCommand::OkBuffers(buffers.clone()));
+                    sender_tx
+                        .send(BrokerCommand::OkBuffers(buffers))
+                        .await
+                        .unwrap();
                 }
                 BrokerCommand::Mes(_id, _, _text) => {
                     println!("matched, MES");
@@ -58,7 +59,10 @@ impl<'a> Broker<'a> {
                 BrokerCommand::AddBuffer(sender_id, (buffered_terminal, widget)) => {
                     let new_buffer_id: u8 = self.add_buffer(buffered_terminal, widget).unwrap();
                     let sender_tx = self.get_sender(sender_id).unwrap();
-                    sender_tx.send(BrokerCommand::Ok(new_buffer_id));
+                    sender_tx
+                        .send(BrokerCommand::Ok(new_buffer_id))
+                        .await
+                        .unwrap();
                 }
                 BrokerCommand::SignalExit(id) => todo!(),
                 other => {
@@ -70,7 +74,7 @@ impl<'a> Broker<'a> {
 
     pub fn add_buffer(
         &mut self,
-        buf: &'a BufferedTerminal<UnixTerminal>,
+        buf: BufferedTerminal<UnixTerminal>,
         widget: DWidget,
     ) -> Result<u8, Error> {
         let max_id: u8 = self
@@ -80,7 +84,7 @@ impl<'a> Broker<'a> {
             .reduce(|acc, x| if acc <= x { x } else { acc })
             .unwrap_or(self.buffers.last().unwrap().0);
 
-        self.buffers.push((max_id.clone() + 1, buf, widget));
+        self.buffers.push((max_id.clone() + 1, buf.into(), widget));
         Ok(max_id)
     }
 
@@ -91,10 +95,9 @@ impl<'a> Broker<'a> {
 
     pub fn get_buffers(
         &self,
-    ) -> Result<&'a Vec<(u8, &BufferedTerminal<UnixTerminal>, DWidget)>, Error> {
-        Ok(&self.buffers)
+    ) -> Result<Vec<(u8, Arc<BufferedTerminal<UnixTerminal>>, DWidget)>, Error> {
+        Ok(self.buffers.clone()) // ✅ clones the Vec and its contents (Arc makes it cheap)
     }
-
     pub fn spawn_frame(&self, buffer_id: u8) -> Result<u8, Error> {
         self.buffers
             .iter()
@@ -104,7 +107,7 @@ impl<'a> Broker<'a> {
             .expect("TODO")
     }
 
-    fn get_sender(&self, sender_id: u8) -> Result<Sender<BrokerCommand<'a>>, Error> {
+    fn get_sender(&self, sender_id: u8) -> Result<Sender<BrokerCommand>, Error> {
         self.senders
             .iter()
             .find(|item| item.0 == sender_id)

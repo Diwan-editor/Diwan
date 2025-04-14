@@ -1,9 +1,6 @@
 mod utils;
 use anyhow::{Error, Result};
-use clap::{
-    builder::{styling::AnsiColor, Styles},
-    Parser,
-};
+use clap::Parser;
 use diwan::{
     core::{
         broker::Broker,
@@ -16,12 +13,10 @@ use diwan::{
 use std::{
     process::exit,
     sync::{Arc, Mutex},
-    thread::sleep,
-    time::Duration,
 };
 use termwiz::surface::Change;
+use tokio::sync::mpsc;
 use tokio::task;
-use tokio::{spawn, sync::mpsc};
 use utils::dn_cli_colored;
 
 /// diwan is a rust based text editor that is fast and secure.
@@ -44,10 +39,9 @@ async fn main() -> Result<(), Error> {
     if arg.man {
         println!("Loading the manual");
     } else if arg.log {
-        let diwan_logger = DiwanLogger::new(DiwanLevelLog::Debug)?;
-        diwan_logger.setup_dn_logger()?;
-
-        diwan_logger.write_to_dn_log(DiwanLevelLog::Critical, "Sorry daddy I made an error!");
+        let di_log = DiwanLogger::new(DiwanLevelLog::Trace)?;
+        di_log.setup_dn_logger().expect("Logger not set up well");
+        di_log.write_to_dn_log(DiwanLevelLog::Critical, "Critical Error has been called!!");
     } else {
         // init the a new buffered terminal
         let dnbuffer = new_buffered_term()?;
@@ -93,9 +87,10 @@ async fn main() -> Result<(), Error> {
             // main_event_loop(&mut buffer2, &mut ui).unwrap();
         })
         .await;
+        tx.send(BrokerCommand::GetBuffers(0)).await.unwrap();
 
-        tx.send(BrokerCommand::GetBuffers).await.unwrap();
-        tx.send(BrokerCommand::GetBuffers).await.unwrap();
+        // tx.send(BrokerCommand::GetBuffers).await.unwrap();
+        // tx.send(BrokerCommand::GetBuffers).await.unwrap();
         tx.clone()
             .send(BrokerCommand::Mes(
                 12,
