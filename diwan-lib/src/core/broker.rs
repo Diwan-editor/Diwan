@@ -25,7 +25,7 @@ pub struct Broker {
 impl Broker {
     // unused mut
     // NOTE(rename): in case the new function doesn't return a value or Self better to name it run then!
-    pub async fn new(broker_receiver: Receiver<BrokerCommand>) {
+    pub async fn new(broker_receiver: Receiver<BrokerCommand>) -> Self {
         let mut broker = Self {
             buffers: Vec::new(),
             senders: Vec::new(),
