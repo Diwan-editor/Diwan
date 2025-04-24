@@ -8,7 +8,7 @@ use termwiz::terminal::{buffered::BufferedTerminal, UnixTerminal};
 pub fn bootstrap_diwan() -> Result<(BufferedTerminal<UnixTerminal>, DWidget), Error> {
     let dnbuffer = new_buffered_term()?;
 
-    Ok(new_with_widget(dnbuffer)?)
+    Ok(new_with_widget(dnbuffer).unwrap())
 }
 
 #[test]

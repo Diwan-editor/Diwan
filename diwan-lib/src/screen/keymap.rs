@@ -109,7 +109,7 @@ impl Keymap {
     /// - `mode`: Mutable reference to the current mode.
     pub fn handle_action(
         action: Actions,
-        mut content: &mut String,
+        content: &mut String,
         cursor_x: &mut usize,
         cursor_y: &mut usize,
         mode: &mut Modes,
@@ -122,15 +122,15 @@ impl Keymap {
             Actions::MoveRight => Self::move_cursor_right(cursor_x, cursor_y, &lines),
             Actions::MoveUp => Self::move_cursor_up(cursor_x, cursor_y, &lines),
             Actions::MoveDown => Self::move_cursor_down(cursor_x, cursor_y, &lines),
-            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, &mut content),
+            Actions::NewLine => Self::insert_newline(cursor_x, cursor_y, content),
             Actions::EnterInsertMode => *mode = Modes::Insert,
             Actions::EnterNormalMode => *mode = Modes::Normal,
-            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, &mut content),
+            Actions::InsertChar(c) => Self::insert_char(c, cursor_x, cursor_y, content),
             Actions::Paste(pasted_string) => {
                 Self::persists_string_in_yank(&pasted_string, yank);
-                Self::insert_string(pasted_string, cursor_x, cursor_y, &mut content)
+                Self::insert_string(pasted_string, cursor_x, cursor_y, content)
             }
-            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, &mut content),
+            Actions::DeleteChar => Self::delete_char(cursor_x, cursor_y, content),
             Actions::DecreaseBufWidth => todo!(),
         }
     }
@@ -255,6 +255,6 @@ impl Keymap {
 
 impl Default for Modes {
     fn default() -> Self {
-        Modes::Normal
+        Self::Normal
     }
 }

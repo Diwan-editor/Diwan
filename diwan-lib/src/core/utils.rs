@@ -105,7 +105,6 @@ pub fn new_with_widget(
 /// let ui = main_screen.setup_ui();
 /// ```
 /// This will set the `MainScreen` as the root widget and prepare the UI for rendering
-
 pub fn setup_ui() -> SendableUi<'static> {
     let ui = Ui::new();
     SendableUi::new(ui)

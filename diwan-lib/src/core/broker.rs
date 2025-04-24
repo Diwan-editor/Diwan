@@ -84,7 +84,7 @@ impl Broker {
             .reduce(|acc, x| if acc <= x { x } else { acc })
             .unwrap_or(self.buffers.last().unwrap().0);
 
-        self.buffers.push((max_id.clone() + 1, buf.into(), widget));
+        self.buffers.push((max_id + 1, buf.into(), widget));
         Ok(max_id)
     }
 

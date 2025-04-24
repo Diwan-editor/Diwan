@@ -35,7 +35,7 @@ pub struct DWidget {
 impl DWidget {
     pub fn update_status_mode(&mut self, mode: Modes) {
         self.mode = mode.clone();
-        self.status_bar.status_mode = mode.clone();
+        self.status_bar.status_mode = mode;
     }
 
     pub fn update_widget_id(&mut self, id: WidgetId) {
